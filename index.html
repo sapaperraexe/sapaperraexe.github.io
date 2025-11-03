@@ -141,7 +141,38 @@
             font-size: 1rem;
         }
 
-        /* Base64 source code section - REMOVED */
+        /* --- Quote Div Styles (ADJUSTED) --- */
+        #random-quote-div {
+            position: fixed; /* Lo fija al viewport */
+            bottom: 0; /* Lo alinea al fondo */
+            left: 0;
+            right: 0;
+            width: 100%;
+            padding: 1.5rem 2rem;
+            text-align: center; 
+            font-size: 0.85rem;
+            z-index: 10;
+            
+            /* Subtle background and blur */
+            background-color: var(--bg-color);
+            opacity: 0.95;
+            color: var(--text-color);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            transition: background-color 0.3s, color 0.3s, opacity 0.3s;
+            box-sizing: border-box;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 600px) {
+            #symbol {
+                font-size: 100pt;
+            }
+            #random-quote-div {
+                padding: 1rem;
+                font-size: 0.75rem;
+            }
+        }
 
     </style>
 </head>
@@ -153,7 +184,7 @@
     <!-- Theme toggle, state handled by JS -->
     <div id="theme-toggle" title="Toggle theme">[ ]</div>
 
-    <!-- Main content -->
+    <!-- Main content (Symbol, Phrase, Links) -->
     <div id="main-container">
 
         <!-- 1. Giant Kanji (堕 - "fallen") -->
@@ -172,10 +203,14 @@
              | 
             {<b><a href="https://www.youtube.com/@yonefer" target="_blank" rel="noopener noreferrer">sound</a></b>}
         </div>
-
-        <!-- 4. Embedded Base64 Source Code - REMOVED -->
-
+        
     </div>
+    
+    <!-- Div for Random Quotes, aligned center bottom (ADJUSTED ELEMENT) -->
+    <div id="random-quote-div">
+        <!-- Quote will be injected here by JavaScript -->
+    </div>
+
 
     <!-- All JavaScript is in-line in this single file -->
     <script>
@@ -187,6 +222,8 @@
             const deathPhraseEl = document.getElementById('death-phrase');
             const backgroundPoemEl = document.getElementById('background-poem');
             const symbolEl = document.getElementById('symbol');
+            // Referencia al nuevo DIV
+            const quoteDivEl = document.getElementById('random-quote-div'); 
 
             // --- Data for Random Generators ---
 
@@ -353,6 +390,51 @@
                 '𓇗𓂝𓅱𓀁𓁐', '𓆸𓈙', '𓇌𓃹𓈖𓈖𓄤', '𓆸𓈙𓇌𓅱𓈖𓈖𓈖𓆑𓂋'
             ];
 
+            // Quotes for Div
+            const existentialQuotes = [
+                "\"What I desire is a revelation. That something—or someone—might magically open up so that, at last, I can comprehend the meaning of my wait.\" — Alejandra Pizarnik",
+                "\"Who controls the past controls the future. Who controls the present controls the past.\" — George Orwell",
+                "\"The simulacrum is never that which conceals the truth—it is the truth which conceals that there is none. The simulacrum is true.\" — Jean Baudrillard (*Simulacra and Simulation*)",
+                "\"Love and death are alike: when we are lost, we turn to them.\" — Silvina Ocampo",
+                "\"After all, the dream is the prefiguration of death.\" — Silvina Ocampo",
+                "\"Lord, the cage has become a bird and flown away, and my heart is mad—it howls at death and smiles at my deliriums behind the wind. What shall I do with fear? What shall I do with fear?\" — Alejandra Pizarnik",
+                "\"Everything in the world began with a yes. One molecule said yes to another molecule and life was born.\" — Clarice Lispector",
+                "\"I just know that something good is going to happen. I don't know when but just saying it could even make it happen.\" — Kate Bush (*Cloudbusting*)",
+                "\"True love is born from understanding.\" — Buddha",
+                "\"Who has not asked himself at some time or other: am I a monster or is this what it means to be a person?\" — Clarice Lispector",
+                "\"The world's continual breathing is what we hear and call silence.\" — Clarice Lispector",
+                "\"Dear, dear! How queer everything is to-day! And yesterday things went on just as usual. Was I the same when I got up this morning? But if I'm not the same, the next question is, Who in the world am I? Ah, that's the great puzzle!\" — Lewis Carroll (*Alice's Adventures in Wonderland*)",
+                "“The shadow personifies everything that the subject refuses to acknowledge about himself,  whether consciously or unconsciously, and represents a tight passage, a narrow door, whose painful constriction no one is spared who goes down to the deep well.” —Carl Jung",
+                "“Cicada: Sick of his own face, sick of his skin, of the dark, he crawls outside himself to sing” —Hosho McCreesh",
+                "\"They said that I was weird, that they loved me for it. But I know that one day they will hate me for the same reasons.\" —Albert Camus",
+                "\"The constant desire to die, and to keep resisting, that is love.\" — Franz Kafka",
+                "\"And I would die a thousand times to be able to receive love without asking for it...\" —Alejandra Pizarnik",
+                "\"Utopia is on the horizon. I walk two steps, it moves two steps away and the horizon moves ten steps further. So, what is the purpose of utopia? That’s what it’s for, to keep us walking.\" —Eduardo Galeano",
+                "\"I was dying, but since they didn’t see blood, they didn’t believe it.\" —Emily Rivera",
+                "\"All that we see or seem is but a dream within a dream.\" — Edgar Allan Poe",
+                "\"There is no exquisite beauty without some strangeness in the proportion.\" — Edgar Allan Poe",
+                "\"The future belongs to those who believe in the beauty of their dreams.\" — Eleanor Roosevelt",
+                "\"Not all those who wander are lost.\" — J.R.R. Tolkien",
+                "“This was the body of a beautiful young woman, conventionally an object of desire, and yet it was a body from which all desire had been eliminated.”― Han Kang, The Vegetarian",
+                "“There are certain memories that remain inviolate to the ravages of time. And to those of suffering. It is not true that everything is colored by time and suffering. It is not true that they bring everything to ruin.”― Han Kang, 흰",
+                "“Perhaps it wasn't about thinking—the formula, the secret— but simply loving and being loved, lost, naively.” —Idea Vilariño",
+                "“This rain is tears shed by the souls of the departed.”― Han Kang, Human Acts",
+                "“I want to swallow you, have you melt into me and flow through my veins.” ― Han Kang, The Vegetarian",
+                "“Why is it such a bad thing to die?” ― Han Kang, The Vegetarian",
+                "“My tantalized spirit. Here blandly reposes, Forgetting, or never Regretting, its roses— Its old agitations Of myrtles and roses” —Edgar Allan Poe",
+                "“All memory is individual, unreproducible - it dies with each person. What is called collective memory is not a remembering but a stipulating: that this is important, and this is the story about how it happened, with the pictures that lock the story in our minds.” ― Susan Sontag, Regarding the Pain of Others",
+                "“Photographs objectify: they turn an event or a person into something that can be possessed.” ― Susan Sontag, Regarding the Pain of Others",
+                "“It is intolerable to have one's sufferings twinned with anybody else's.” ― Susan Sontag, Regarding the Pain of Others",
+                "“Perhaps too much value is assigned to memory, not enough to thinking. Remembering is an ethical act, has ethical value in and of itself. Memory is, achingly, the only relation we can have with the dead.” ― Susan Sontag, Regarding the Pain of Others",
+                "“I have spend my life resisting the desire to end it” —Frank Kafka",
+                "“I serve the moon with all my might, For the gift she grants—the silent night. When her light pins me, soft and tight, I write poems she whispers bright.” —Nathy Peluso, EMERGENCIA",
+                "“And I cry, it's not fair. I just need a little lovin', I just need a little air” —Chappell Roan, Good Luck, Babe!",
+                "“(...) I just, ooh, I just need a friend” —Amy Winehouse, Rehab",
+                "“Our mother's philosophy feels like quicksand, And if she sinks, I'm going down with her.” —Björk, Quicksand",
+                "“This will be my monument, This will be a beacon when I'm gone. So that when the moment comes I can say I did it all with love” —Röyksopp & Robyn, Monument"
+            ];
+
+
             // --- Core Functions ---
 
             // 1. Load a random death phrase
@@ -378,9 +460,7 @@
                 backgroundPoemEl.textContent = fullText;
             }
 
-            // 3. Embed the page's own source code as Base64 - REMOVED
-
-            // 4. Theme Toggler
+            // 3. Theme Toggler
             function setupTheme() {
                 const currentTheme = localStorage.getItem('theme');
                 if (currentTheme === 'light') {
@@ -404,6 +484,15 @@
                 }
             });
 
+            // 4. Display Random Quote in Div (UPDATED FUNCTION)
+            function displayRandomQuote() {
+                if (quoteDivEl) {
+                    const randomIndex = Math.floor(Math.random() * existentialQuotes.length);
+                    quoteDivEl.textContent = existentialQuotes[randomIndex];
+                }
+            }
+
+
             // --- Initialization ---
             
             // Run all functions on load
@@ -411,12 +500,10 @@
             loadDeathPhrase();
             loadMainGlyph();
             generateBackgroundText();
+            displayRandomQuote(); 
             
-            // Run source embed last - REMOVED
         });
     </script>
 
 </body>
 </html>
-
-

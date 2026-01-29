@@ -1,45 +1,86 @@
+/* Fuente personalizada */
+@font-face {
+    font-family: 'OpenSeshat';
+    src: url('OpenSeshat.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
 
+:root {
+    /* Sapaperra Dark Scheme (Default) */
+    --bg-dark: #1a1a1a;
+    --text-dark: #c0c0c0;
+    --link-dark: #8a8ad4;
+    --link-hover-dark: #b0b0ff;
+    --pre-bg-dark: #222;
+    --border-light: rgba(192, 192, 192, 0.15);
 
+    /* Sapaperra Light Scheme */
+    --bg-light: #e0e0e0;
+    --text-light: #2a2a2a;
+    --link-light: #4a4a9d;
+    --link-hover-light: #00008b;
+    --pre-bg-light: #f0f0f0;
+
+    /* Dynamic Variables */
+    --bg-color: var(--bg-dark);
+    --text-color: var(--text-dark);
+    --link-color: var(--link-dark);
+    --link-hover: var(--link-hover-dark);
+    --pre-bg: var(--pre-bg-dark);
+}
+
+/* Base Body Styles */
 body {
-    margin: 60px auto;
-    width: 70%;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'OpenSeshat', "Courier New", Courier, monospace;
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s, color 0.3s;
+    line-height: 1.4;
 }
-nav ul, footer ul {
-    font-family:'OpenSeshat';
-    padding: 0px;
-    list-style: none;
-    font-weight: bold;
+
+/* Light Mode Class */
+body.light-mode {
+    --bg-color: var(--bg-light);
+    --text-color: var(--text-light);
+    --link-color: var(--link-light);
+    --link-hover: var(--link-hover-light);
+    --pre-bg: var(--pre-bg-light);
 }
-nav ul li, footer ul li {
-    display: inline;
-    margin-right: 20px;
-}
+
+/* Links */
 a {
+    color: var(--link-color);
     text-decoration: none;
-    color: #999;
+    transition: color 0.2s;
 }
+
 a:hover {
+    color: var(--link-hover);
     text-decoration: underline;
 }
-h1 {
-    font-size: 3em;
-    font-family:'OpenSeshat';
-}
-p {
-    font-size: 1.5em;
-    line-height: 1.4em;
-    color: #333;
-}
-footer {
-    border-top: 1px solid #d5d5d5;
-    font-size: .8em;
+
+/* Theme toggle button shared logic */
+#theme-toggle {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    cursor: pointer;
+    font-family: monospace;
+    user-select: none;
+    color: var(--link-color);
+    z-index: 100;
+    font-size: 1rem;
 }
 
-ul.posts { 
-    margin: 20px auto 40px; 
-    font-size: 1.5em;
-}
-
-ul.posts li {
-    list-style: none;
+/* Shared UI Components */
+pre {
+    background: var(--pre-bg);
+    padding: 10px;
+    border-radius: 4px;
+    overflow-x: auto;
+    border: 1px solid var(--border-light);
 }

@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Margoria notarium | Manuscript and Marginalia Playground </title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      @font-face {
+        font-family: "gotica";
+        src: url("fonts/Pfeffersimpelgotisch-jqgO.otf") format("opentype");
+      }
+
+      * {
+        scrollbar-color: #978a4b #6b6237;
+      }
+
+      body {
+        background-image: url("images/background/bgbg.png");
+        background-repeat: repeat;
+        text-align: center;
+        color: #485b94;
+        cursor: url("images/cursors/cat_cursor.png"), auto;
+      }
+
+      header {
+        margin: 20px auto;
+        display: block;
+        font-size: 1.2em;
+        width: 700px;
+        max-width: 100%;
+      }
+
+      main {
+        display: grid;
+        width: 1600px;
+        max-width: 100%;
+        margin: auto;
+        grid-template-columns: 30% 40% 30%;
+        background-image: url("images/background/parchment.jpg");
+        padding: 15px;
+        border: solid 4px #c6ae39;
+      }
+
+      .paper {
+        height: 900px;
+      }
+
+      a:link,
+      a:visited,
+      a:active {
+        color: #526484;
+      }
+
+      a:hover {
+        color: #b9c0c1;
+        cursor: url("images/cursors/frog_cursor.png"), auto;
+      }
+
+      .column1 {
+        z-index: 3;
+        grid-column: 1;
+      }
+
+      .column3 {
+        grid-column: 3;
+      }
+      .column2 {
+        grid-column: 2;
+        padding: 10px;
+      }
+
+      .section {
+        margin: 20px auto;
+      }
+
+      #text {
+        position: relative;
+        font-size: 18px;
+        text-align: left;
+        width: 400px;
+        color: var(--text-color);
+      }
+
+      .images {
+        position: relative;
+        z-index: 2;
+      }
+
+      .mySlides {
+        display: none;
+      }
+
+      button,
+      select {
+        font-family: "pfeffermediaeval", garamond;
+        color: #c6ae39;
+        border: solid 2px #c6ae39;
+        background-color: #485b94;
+        padding: 5px 10px;
+        font-size: 1em;
+        margin: 5px 10px 20px;
+        cursor: url("images/cursors/frog_cursor.png"), auto;
+      }
+
+      /*fonts*/
+      :root,
+      :root.black {
+        --text-color: black;
+      }
+      :root.red {
+        --text-color: #bf3605;
+      }
+      :root.gold {
+        --text-color: #c6ae39;
+      }
+      :root.white {
+        --text-color: #dfd9d0;
+      }
+      .gotica {
+        font-family: "gotica", garamond;
+      }
+      .mediaeval {
+        font-family: "mediaeval", garamond;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="interact.min.js"></script>
+    <header class="scroll4">
+      <h1>Margoria notarium</h1>
+      <p>
+         Manuscript and Marginalia Playground and composer | Drag and drop the different elements to create your manuscript.
+      </p>
+    </header>
+
+    <main>
+      <div class="column1">
+        <div class="section">
+		 <h2>Decorative Letters</h2>
+          <img
+            src="images/caps/a_scriptores_historiae_augustae.png"
+            class="draggable images"
+          />
+          <img
+            style="margin-bottom: -47px"
+            src="images/caps/a.png"
+            class="draggable images"
+          />
+
+          <img
+            style="margin-bottom: -9px"
+            src="images/caps/b.png"
+            class="draggable images"
+          />
+          <img src="images/caps/b2.png" class="draggable images" />
+          <img
+            src="images/caps/c_scriptores_historiae_augustae.png"
+            class="draggable images"
+          />
+          <img src="images/caps/c.png" class="draggable images" />
+
+          <img src="images/caps/d.png" class="draggable images" />
+          <img
+            style="margin: -58px auto -20px"
+            src="images/caps/d2.png"
+            class="draggable images"
+          />
+          <img src="images/caps/e.png" class="draggable images" />
+          <img
+            src="images/caps/e_scriptores_historiae_augustae.png"
+            class="draggable images"
+          />
+          <img
+            src="images/caps/f_scriptores_historiae_augustae.png"
+            class="draggable images"
+          />
+          <img
+            src="images/caps/g_scriptores_historiae_augustae.png"
+            class="draggable images"
+          />
+          <img src="images/caps/g.png" class="draggable images" />
+
+          <img
+            style="margin-bottom: -40px"
+            src="images/caps/h.png"
+            class="draggable images"
+          />
+          <img src="images/caps/h2.png" class="draggable images" />
+          <img
+            src="images/caps/i_scriptores_historiae_augustae.png"
+            class="draggable images"
+          />
+          <img src="images/caps/j.png" class="draggable images" />
+          <img src="images/caps/k.png" class="draggable images" />
+          <img
+            style="margin-bottom: -7px"
+            src="images/caps/l.png"
+            class="draggable images"
+          />
+          <img src="images/caps/m.png" class="draggable images" />
+          <img
+            src="images/caps/m_scriptores_historiae_augustae.png"
+            class="draggable images"
+          />
+          <img
+            src="images/caps/chroniques_sire_jehan_froissart_n.png"
+            class="draggable images"
+          />
+          <img
+            style="margin-bottom: -190px"
+            src="images/caps/n.png"
+            class="draggable images"
+          />
+          <img
+            style="margin-top: -40px"
+            src="images/caps/o.png"
+            class="draggable images"
+          />
+          <img
+            src="images/caps/o_scriptores_historiae_augustae.png"
+            class="draggable images"
+          />
+          <img
+            src="images/caps/p_scriptores_historiae_augustae.png"
+            class="draggable images"
+          />
+          <img
+            src="images/caps/q_scriptores_historiae_augustae.png"
+            class="draggable images"
+          />
+          <img
+            src="images/caps/r_scriptores_historiae_augustae.png"
+            class="draggable images"
+          />
+          <img src="images/caps/r.png" class="draggable images" />
+          <img
+            src="images/caps/s_scriptores_historiae_augustae.png"
+            class="draggable images"
+          />
+          <img
+            style="margin-bottom: -7px"
+            src="images/caps/s.png"
+            class="draggable images"
+          />
+          <img
+            src="images/caps/t_scriptores_historiae_augustae.png"
+            class="draggable images"
+          />
+          <img src="images/caps/u.png" class="draggable images" />
+          <img
+            src="images/caps/v_scriptores_historiae_augustae.png"
+            class="draggable images"
+          />
+          <img src="images/caps/w.png" class="draggable images" />
+          <img src="images/caps/x.png" class="draggable images" />
+          <img
+            style="margin-bottom: -30px"
+            src="images/caps/y.png"
+            class="draggable images"
+          />
+          <img src="images/caps/z.png" class="draggable images" />
+        </div>
+        
+         <div class="section">
+          <h2>Text</h2>
+          <button type="button" onclick="changeFont()">Switch font</button>
+
+          <select name="color-select" id="color-select">
+            <option value="black">Black</option>
+            <option value="red">Red</option>
+            <option value="gold">Gold</option>
+            <option value="white">White</option>
+          </select>
+
+          <div class="draggable">
+            <div id="text" class="gotica" contenteditable="true">
+              Type your text here and place it wherever you want!
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="column2">
+        <h2>Paper</h2>
+        <button onclick="plusDivs(-1)">&#10094;</button>
+       	   Change background
+        <button onclick="plusDivs(1)">&#10095;</button>
+        <div class="paper">
+          <img
+            class="mySlides bgs"
+            src="images/background/horae_ad_usum_trecensem_1415-20.png"
+          />
+          <img
+            class="mySlides bgs"
+            src="images/background/chansonnier_cordiforme_de_montchenu.png"
+          />
+          <img
+            class="mySlides bgs"
+            src="images/background/liège_book_of_hours_ms_w16.png"
+          />
+          <img
+            class="mySlides bgs"
+            src="images/background/book_of_hours_belgium_1480_ms_m493.jpg"
+          />
+          <img
+            class="mySlides bgs"
+            src="images/background/horae_ad_usum_trecensem_1415-20_2.jpg"
+          />
+          <img
+            class="mySlides bgs"
+            src="images/background/les_voeux_du_paon_1350.jpg"
+          />
+
+          <img class="mySlides bgs" src="images/background/parchment.jpg" />
+        </div>
+        <div class="section">
+          <h2>Lines</h2>
+          <img
+            src="images/border/lutterell_goatbird_sm.png"
+            class="draggable images"
+          />
+          <img
+            src="images/border/luttrell_rat_eating_fish_sm.png"
+            class="draggable images"
+          />
+          <img
+            src="images/border/luttrell_bird_dividerpng_sm.png"
+            class="draggable images"
+          />
+
+          <img
+            src="images/border/liège_book_of_hours_ms_w16_2.png"
+            class="draggable images"
+          />
+          <img
+            src="images/border/liège_book_of_hours_ms_w16_3.png"
+            class="draggable images"
+          />
+          <img
+            src="images/border/liège_book_of_hours_ms_w16_4.png"
+            class="draggable images"
+          />
+          <img
+            src="images/border/liège_book_of_hours_ms_w16_5.png"
+            class="draggable images"
+          />
+          <img
+            src="images/border/liège_book_of_hours_ms_w16_7.png"
+            class="draggable images"
+          />
+          <img
+            src="images/border/liège_book_of_hours_ms_w16_6.png"
+            class="draggable images"
+          />
+        </div>
+      </div>
+
+      <div class="column3">
+        <div class="section">
+          <h2>Marginalia</h2>
+          <img
+            src="images/marginalias/breviary_of_renaud_1302-1303_rabbit1_sm.png"
+            class="draggable images"
+          />
+          <img
+            src="images/marginalias/breviary_of_renaud_1302-1303_rabbit2_sm.png"
+            class="draggable images"
+          />
+
+          <img
+            src="images/marginalias/le_livre_des_hystoires_du_mirouer_du_monde_sm.png"
+            class="draggable images"
+          />
+
+          <img
+            src="images/marginalias/anabasis_1501_screamingsnail_sm.png"
+            class="draggable images"
+          />
+          <img
+            src="images/marginalias/paris_bible_1485_snailcat_sm.png"
+            class="draggable images"
+          />
+
+          <img
+            src="images/marginalias/heures_de_jacques_de_rambures_1460_snailwoman.png"
+            class="draggable images"
+          />
+
+          <img
+            src="images/marginalias/bruges_book_of_hours_1510-1525_snailberries_sm.png"
+            class="draggable images"
+          />
+
+          <img
+            src="images/marginalias/chroniques_sire_jehan_froissart_folio79r2.png"
+            class="draggable images"
+          />
+
+          <img
+            src="images/marginalias/unknown_source_15th-c_frod_sm.png"
+            class="draggable images"
+          />
+
+          <img
+            src="images/marginalias/book_of_hours_france_paris_1420-1425_hedgehog_sm.png"
+            class="draggable images"
+          />
+
+          <img
+            src="images/marginalias/institutes_of_justinian_Frod_sm.png"
+            class="draggable images"
+          />
+          <img
+            src="images/marginalias/french_book_of_hours_14birdreader_sm.png"
+            class="draggable images"
+          />
+          <img
+            src="images/marginalias/froissarts_chronicles_luteskeleman_sm.png"
+            class="draggable images"
+          />
+
+          <img
+            src="images/marginalias/luttrell.f.50r_amphisbaena_sm.png"
+            class="draggable images"
+          />
+
+          <img
+            src="images/marginalias/luttrell_fishman_sm.png"
+            class="draggable images"
+          />
+
+          <img
+            src="images/marginalias/luttrell_bat_sm.png"
+            class="draggable images"
+          />
+
+          <img
+            src="images/marginalias/st_omer_psalter_1330-1420_sm.png"
+            class="draggable images"
+          />
+          <img
+            src="images/marginalias/bible_france_1270-1290_lilguy_sm.png"
+            class="draggable images"
+          />
+          <img
+            src="images/marginalias/Book_of_Hours_Lyon_1505-1510_cat_sm.png"
+            class="draggable images"
+          />
+
+          <img
+            src="images/marginalias/book_of_hours_Flanders_14th_century_sm.png"
+            class="draggable images"
+          />
+          <img
+            src="images/marginalias/lutterell_cat.png"
+            class="draggable images"
+          />
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <img class="demon3" src="images/layout/lildemonlt.png" alt="" />
+      <img class="demon4" src="images/layout/pointingdemonlt.png" alt="" />
+      <div class="scroll4 footscroll">
+        <div class="icons2">
+          
+        </div>
+  
+          </div>
+      </div>
+    </footer>
+    <script>
+      // here you tell InteractJS which class of items you'd like to be draggable
+      interact(".draggable").draggable({
+        listeners: {
+          // when a user drags the object ('on dragmove') run this function
+          move: dragMoveListener,
+          // call this function on every dragend event
+          end(event) {
+            console.log("item dropped!");
+          },
+        },
+      });
+
+      function dragMoveListener(event) {
+        // all this stuff gets the position of the item while it's being dragged
+        var target = event.target;
+        // keep the dragged position in the data-x/data-y attributes
+        var x = (parseFloat(target.getAttribute("data-x")) || 0) + event.dx;
+        var y = (parseFloat(target.getAttribute("data-y")) || 0) + event.dy;
+
+        // translate the element
+        target.style.transform = "translate(" + x + "px, " + y + "px)";
+
+        // update the position attributes
+        target.setAttribute("data-x", x);
+        target.setAttribute("data-y", y);
+      }
+
+      /*Background*/
+      var slideIndex = 1;
+      showDivs(slideIndex);
+
+      function plusDivs(n) {
+        showDivs((slideIndex += n));
+      }
+
+      function showDivs(n) {
+        var i;
+        var x = document.getElementsByClassName("mySlides");
+        if (n > x.length) {
+          slideIndex = 1;
+        }
+        if (n < 1) {
+          slideIndex = x.length;
+        }
+        for (i = 0; i < x.length; i++) {
+          x[i].style.display = "none";
+        }
+        x[slideIndex - 1].style.display = "block";
+      }
+
+      /*fonts*/
+      const setTheme = (theme) => (document.documentElement.className = theme);
+
+      document
+        .getElementById("color-select")
+        .addEventListener("change", function () {
+          setTheme(this.value);
+        });
+
+      function changeFont() {
+        var fon = document.getElementById("text");
+        if (fon.className == "gotica") {
+          fon.className = "pfeffermediaeval";
+        } else {
+          fon.className = "gotica";
+        }
+      }
+    </script>
+  </body>
+</html>

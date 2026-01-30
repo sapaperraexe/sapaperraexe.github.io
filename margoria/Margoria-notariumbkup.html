@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Margoria Notarium | Manuscript and Marginalia Studio</title>
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+
+  <script src="https://cdn.jsdelivr.net/npm/interactjs@1.10.19"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* === TIPOGRAFÍAS === */
+    @font-face {
+      font-family: "capo1880";
+      src: url("fonts/Capo1880.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "pfeffermediaeval";
+      src: url("fonts/PfefferMediaeval.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "codexmanesse";
+      src: url("fonts/codex_manesse.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "cissanthemos";
+      src: url("fonts/Cissanthemos.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "hicopus";
+      src: url("fonts/HocOpus-Regular.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "icigist";
+      src: url("fonts/IciGist-Regular.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "indiebusillis";
+      src: url("fonts/Indiebusillis.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "litteraeignotae";
+      src: url("fonts/LitteraeIgnotae.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "malatemporacurrunt";
+      src: url("fonts/Malatemporacurrunt-Regular.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "pfeffersimpelgotisch";
+      src: url("fonts/PfefferSimpelgotisch.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "quariteregnumdei";
+      src: url("fonts/QuaeriteRegnumDei.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "sprangalongobarda";
+      src: url("fonts/SprangaLongobarda-Regular.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "vulnus";
+      src: url("fonts/Vulnus-Regular.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "zifferaveneta";
+      src: url("fonts/Zifferaveneta-Regular.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "andiamoabruciarglilacasa";
+      src: url("fonts/Andiamoabruciarglilacasa-Reg.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "capoecclesia";
+      src: url("fonts/CapoEcclesia-Regular.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "capolinea";
+      src: url("fonts/Capolinea-Regular.woff2") format("woff2");
+    }
+
+    /* === FONT CLASSES === */
+    .capo1880 { font-family: "capo1880", serif; }
+    .pfeffermediaeval { font-family: "pfeffermediaeval", serif; }
+    .codexmanesse { font-family: "codexmanesse", serif; }
+    .cissanthemos { font-family: "cissanthemos", serif; }
+    .hicopus { font-family: "hicopus", serif; }
+    .icigist { font-family: "icigist", serif; }
+    .indiebusillis { font-family: "indiebusillis", serif; }
+    .litteraeignotae { font-family: "litteraeignotae", serif; }
+    .malatemporacurrunt { font-family: "malatemporacurrunt", serif; }
+    .pfeffersimpelgotisch { font-family: "pfeffersimpelgotisch", serif; }
+    .quariteregnumdei { font-family: "quariteregnumdei", serif; }
+    .sprangalongobarda { font-family: "sprangalongobarda", serif; }
+    .vulnus { font-family: "vulnus", serif; }
+    .zifferaveneta { font-family: "zifferaveneta", serif; }
+    .andiamoabruciarglilacasa { font-family: "andiamoabruciarglilacasa", serif; }
+    .capoecclesia { font-family: "capoecclesia", serif; }
+    .capolinea { font-family: "capolinea", serif; }
+
+    /* === VARIABLES DE TEMA === */
+    :root {
+      /* -- TEMA TIERRA (DEFAULT) -- */
+      --bg-main: #341717;
+      --panel-bg: rgba(26, 22, 20, 0.95);
+      --accent-color: #978a4b;       /* Gold original */
+      --accent-bright: #c5b358;
+      --accent-red: #850d00;
+      --text-main: #b8a994;
+      --ui-radius: 4px;              /* Bordes cuadrados estilo medieval clásico */
+      --ui-border-width: 1px;
+      --backdrop-filter: blur(8px);
+      --bg-filter: none;             /* Sin filtro en las imágenes de fondo */
+    }
+
+    /* -- TEMA VERDE (Basado en imagen analizada) -- */
+    body.theme-green {
+      --bg-main: #182020;            /* Verde pizarra oscuro (del fondo de la imagen) */
+      --panel-bg: rgba(26, 35, 33, 0.92); 
+      --accent-color: #5a6e5a;       /* Verde oliva/sage (del borde de la imagen) */
+      --accent-bright: #a4bfa4;      /* Versión clara del borde */
+      --accent-red: #a34e4e;         /* Rojo desaturado (del punto rojo de la imagen) */
+      --text-main: #daddd8;          /* Blanco hueso */
+      --ui-radius: 24px;             /* Borde muy redondeado (estilo UI moderna/píldora) */
+      --ui-border-width: 1.5px;
+      --backdrop-filter: blur(12px);
+      --bg-filter: hue-rotate(140deg) desaturate(30%) brightness(0.8); /* Ajusta los demonios al verde */
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent-color) var(--bg-main);
+      transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, border-radius 0.4s ease;
+    }
+
+    body {
+      background-image:
+        url("images/layout/vincent _of_beauvais_speculum_historiale_bruges_1455_reverse.png"),
+        url("images/layout/batcreature.png"),
+        url("images/layout/demoncat.png"),
+        url("images/layout/the_book_of_knighthood_1460.png"),
+        url("images/background/bgbgbg.png");
+      background-position: left top, right 20px, 95% 95%, left bottom, right top;
+      background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+      background-attachment: fixed;
+      
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      
+      font-family: "pfeffermediaeval", garamond, serif;
+      line-height: 1.5;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      cursor: url("images/cursors/spearcursor.png"), auto;
+    }
+    
+    /* Filtro para integrar las ilustraciones de fondo en el tema verde */
+    body.theme-green {
+      background-blend-mode: hard-light; 
+    }
+
+    /* En tema verde, aplicamos filtro a pseudo-elemento o directamente si soportado,
+       pero para simplificar, usaremos transición de color de fondo principal. */
+
+    a:hover,
+    button:hover {
+      cursor: url("images/cursors/pointercursor.png"), pointer;
+    }
+
+    /* === HEADER === */
+    header {
+      background: var(--panel-bg);
+      backdrop-filter: var(--backdrop-filter);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--accent-color);
+      border-radius: 0 0 12px 12px;
+      z-index: 100;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+    }
+
+    header h1 {
+      font-family: "codexmanesse", serif;
+      font-size: 28px;
+      letter-spacing: 3px;
+      color: var(--accent-bright);
+      text-shadow: 0 0 12px rgba(151, 138, 75, 0.2);
+    }
+
+    header p {
+      font-size: 0.9rem;
+      opacity: 0.85;
+    }
+
+    .header-left {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header-right {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn-tool {
+      background: transparent;
+      border: var(--ui-border-width) solid rgba(151, 138, 75, 0.3);
+      border-color: var(--accent-color);
+      color: var(--text-main);
+      padding: 6px 16px;
+      border-radius: var(--ui-radius);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-tool i {
+      width: 16px;
+      height: 16px;
+    }
+
+    .btn-tool:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--accent-bright);
+      color: var(--accent-bright);
+      transform: translateY(-1px);
+    }
+
+    .btn-tool.primary {
+      border-color: var(--accent-red);
+      color: var(--accent-bright);
+    }
+
+    .btn-tool.primary:hover {
+      background: rgba(133, 13, 0, 0.4);
+    }
+
+    /* Botón Theme Toggle especial */
+    #btn-toggle-theme {
+      margin-left: 12px;
+      border-color: var(--accent-bright);
+    }
+
+    /* === LAYOUT === */
+    main {
+      display: grid;
+      grid-template-columns: 320px 1fr 320px;
+      flex: 1;
+      overflow: hidden;
+      /* Gradiente sutil sobre el fondo */
+      background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.4) 100%);
+    }
+
+    aside.sidebar {
+      background: var(--panel-bg);
+      backdrop-filter: var(--backdrop-filter);
+      border-right: 1px solid var(--accent-color);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 24px;
+      gap: 30px;
+      z-index: 10;
+      margin: 12px;
+    }
+
+    /* Ajuste específico para el tema verde para que parezcan paneles flotantes si se desea,
+       pero mantendremos la estructura sólida para coherencia */
+    
+    aside.sidebar-right {
+      border-right: none;
+      border-left: 1px solid var(--accent-color);
+    }
+
+    .sidebar section h2 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--accent-color);
+      border-bottom: 1px solid rgba(151, 138, 75, 0.3);
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .asset-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+      gap: 12px;
+    }
+
+    .asset-item {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: var(--ui-radius); /* Se adapta al tema (cuadrado vs redondo) */
+      border: 1px solid transparent;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    /* En tema verde, hacemos los items más parecidos a la imagen (oscuros con borde) */
+    body.theme-green .asset-item {
+       background: rgba(0, 0, 0, 0.2);
+       border: 1px solid rgba(90, 110, 90, 0.3);
+    }
+
+    .asset-item:hover {
+      border-color: var(--accent-bright);
+      background: rgba(255, 255, 255, 0.08);
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .asset-item img {
+      max-width: 80%;
+      max-height: 80%;
+      pointer-events: none;
+      filter: drop-shadow(1px 2px 3px rgba(0, 0, 0, 0.5));
+    }
+
+    .text-tools {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+      gap: 12px;
+    }
+
+    .text-tools .asset-item i {
+      color: var(--accent-color);
+    }
+
+    /* === CANVAS === */
+    .canvas-area {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 50px;
+      overflow: hidden;
+    }
+
+    .ruler-h,
+    .ruler-v {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--accent-color);
+      z-index: 3;
+      pointer-events: none;
+      opacity: 0.4;
+    }
+
+    .ruler-h { top: 0; left: 0; right: 0; height: 22px; border-top: none; }
+    .ruler-v { top: 0; left: 0; bottom: 0; width: 22px; border-left: none; }
+
+    #paper-viewport {
+      width: 750px;
+      height: 900px;
+      background-color: #d9c5ab; /* Parchment base color siempre fijo */
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center;
+      box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.8),
+        0 0 0 1px rgba(0, 0, 0, 0.4),
+        inset 40px 40px 0 rgba(0, 0, 0, 0.05),
+        inset -40px -40px 0 rgba(0, 0, 0, 0.05);
+      position: relative;
+      overflow: hidden;
+      transform: scale(1);
+      transition: transform 0.3s ease, background-image 0.4s ease;
+      padding: 40px;
+    }
+
+    .grid-overlay {
+      position: absolute;
+      inset: 40px; /* Márgenes: 40px en todos los lados */
+      background-size: 30px 30px;
+      background-image:
+        linear-gradient(to right, rgba(151, 138, 75, 0.15) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(151, 138, 75, 0.15) 1px, transparent 1px);
+      pointer-events: none;
+      z-index: 1;
+      display: none;
+    }
+
+    .draggable-element {
+      position: absolute;
+      touch-action: none;
+      user-select: none;
+      cursor: move;
+      z-index: 10;
+      left: 0;
+      top: 0;
+      transform-origin: center center;
+    }
+
+    .draggable-element.selected {
+      outline: 2px solid var(--accent-color);
+      outline-offset: 4px;
+      filter: drop-shadow(0 0 8px var(--accent-color));
+    }
+
+    .text-block {
+      font-size: 26px;
+      min-width: 160px;
+      padding: 4px;
+      color: #000;
+      line-height: 1.4;
+      outline: 2px dashed rgba(26, 22, 20, 0.3);
+      outline-offset: 2px;
+      background: transparent;
+      position: relative;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      display: block;
+      text-shadow: 0.5px 0.5px 1px rgba(255,255,255,0.3);
+    }
+
+    .text-red { color: var(--accent-red); }
+    .text-gold { color: #8a731d; }
+
+    /* Resize handles for text blocks */
+    .draggable-element.text-resizable::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      width: 16px;
+      height: 16px;
+      background: var(--accent-color);
+      cursor: se-resize;
+      border-radius: 2px;
+      border: 1px solid var(--accent-bright);
+    }
+
+    /* === CONTEXT TOOLBAR === */
+    .context-toolbar {
+      position: absolute;
+      background: var(--panel-bg);
+      backdrop-filter: var(--backdrop-filter);
+      border: 1px solid var(--accent-color);
+      border-radius: 12px;
+      padding: 8px 12px;
+      display: none;
+      flex-direction: row;
+      gap: 4px;
+      z-index: 50;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      min-width: auto;
+      align-items: center;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+    }
+
+    .context-toolbar.visible {
+      display: flex;
+    }
+
+    /* === TEXT TOOLBAR === */
+    .text-toolbar {
+      position: fixed;
+      background: var(--panel-bg);
+      backdrop-filter: var(--backdrop-filter);
+      border: 1px solid var(--accent-color);
+      border-radius: 12px;
+      padding: 8px 12px;
+      display: none;
+      flex-direction: row;
+      gap: 8px;
+      z-index: 50;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      align-items: center;
+      flex-wrap: wrap;
+      min-width: auto;
+      max-width: 90vw;
+      max-height: auto;
+    }
+
+    .text-toolbar.visible {
+      display: flex;
+    }
+
+    .text-toolbar-group {
+      display: flex;
+      flex-direction: row;
+      gap: 4px;
+      align-items: center;
+      border-right: 1px solid rgba(151, 138, 75, 0.2);
+      padding-right: 8px;
+      margin-right: 8px;
+    }
+
+    .text-toolbar-group:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+
+    /* === ZOOM CONTROL === */
+    #zoom-control {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--panel-bg);
+      backdrop-filter: var(--backdrop-filter);
+      border: 1px solid var(--accent-color);
+      border-radius: 12px;
+      padding: 8px 12px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      z-index: 40;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    /* === SLIDER POPUPS === */
+    #scale-slider-container,
+    #rotate-slider-container {
+      position: fixed;
+      background: var(--panel-bg);
+      backdrop-filter: var(--backdrop-filter);
+      border: 1px solid var(--accent-color);
+      border-radius: 12px;
+      padding: 8px 12px;
+      display: none;
+      z-index: 51;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      min-width: 150px;
+      left: 20px;
+    }
+
+    #scale-slider-container {
+      top: 150px;
+    }
+
+    #rotate-slider-container {
+      top: 210px;
+    }
+
+    #zoom-slider {
+      width: 80px;
+      height: 3px;
+      border-radius: 2px;
+      background: rgba(151, 138, 75, 0.2);
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    #zoom-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      cursor: pointer;
+      border: 1px solid var(--accent-bright);
+    }
+
+    #zoom-slider::-moz-range-thumb {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      cursor: pointer;
+      border: 1px solid var(--accent-bright);
+    }
+
+    #zoom-value {
+      font-size: 0.7rem;
+      color: var(--text-main);
+      min-width: 30px;
+      text-align: center;
+    }
+
+    .toolbar-section {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      flex-wrap: nowrap;
+      border-right: 1px solid rgba(151, 138, 75, 0.3);
+      padding-right: 4px;
+    }
+
+    .toolbar-section:last-of-type {
+      border-right: none;
+      padding-right: 0;
+    }
+
+    .toolbar-section-label {
+      display: none;
+    }
+
+    .toolbar-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-main);
+      padding: 4px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 28px;
+      height: 28px;
+      font-size: 0.65rem;
+    }
+
+    .toolbar-btn:hover {
+      border-color: var(--accent-color);
+      color: var(--accent-bright);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .toolbar-btn.danger:hover {
+      background: rgba(133, 13, 0, 0.3);
+      color: var(--accent-red);
+      border-color: var(--accent-red);
+    }
+
+    .toolbar-slider {
+      width: 120px;
+      margin: 4px 0;
+    }
+
+    .slider-label {
+      font-size: 0.7rem;
+      color: var(--text-main);
+      opacity: 0.7;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(151, 138, 75, 0.2);
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      cursor: pointer;
+      border: 1px solid var(--accent-bright);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      cursor: pointer;
+      border: 1px solid var(--accent-bright);
+    }
+
+    /* === DOCK === */
+    .dock {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--panel-bg);
+      backdrop-filter: var(--backdrop-filter);
+      
+      /* En tema verde, esto será muy redondo (píldora), en tema tierra más sutil */
+      border-radius: var(--ui-radius); 
+      
+      border: 1px solid var(--accent-color);
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: var(--text-main);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+      z-index: 20;
+      font-size: 0.8rem;
+    }
+    
+    /* Ajuste específico para forzar la forma de píldora completa en el Dock si se desea siempre */
+    /* Pero dejaremos que var(--ui-radius) lo controle para coherencia */
+
+    .dock-divider {
+      width: 1px;
+      height: 20px;
+      background: var(--accent-color);
+      opacity: 0.5;
+    }
+
+    .dock button {
+      background: none;
+      border: 1px solid transparent;
+      color: var(--text-main);
+      padding: 6px 10px;
+      border-radius: var(--ui-radius);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      transition: all 0.25s ease;
+    }
+
+    .dock button:hover {
+      border-color: var(--accent-color);
+      color: var(--accent-bright);
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateY(-2px);
+    }
+
+    #bg-name {
+      min-width: 180px;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--accent-bright);
+      font-weight: 600;
+    }
+
+    /* === DEMONS === */
+    .demons-footer {
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      right: 0;
+      pointer-events: none;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 80px;
+      opacity: 0.9;
+      z-index: 1;
+    }
+    
+    /* En el tema verde, los demonios se oscurecen para parecer sombras del bosque/pantano */
+    body.theme-green .demons-footer img {
+      filter: brightness(0.6) sepia(0.5) hue-rotate(90deg);
+    }
+
+    .demons-footer img {
+      max-height: 140px;
+      transition: filter 0.4s ease;
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 1100px) {
+      main { grid-template-columns: 1fr; }
+      aside.sidebar { display: none; }
+      .canvas-area { padding: 20px; }
+      #paper-viewport { transform: scale(0.7); }
+    }
+
+    @media (max-width: 700px) {
+      #paper-viewport { transform: scale(0.55); }
+    }
+  </style>
+</head>
+<body class="theme-earth"> <!-- Clase inicial -->
+  <header>
+    <div class="header-left">
+      <h1>Margoria Notarium</h1>
+      <p>Manuscript and Marginalia Playground</p>
+    </div>
+    <div class="header-right">
+      <button class="btn-tool" id="btn-toggle-theme" title="Switch Theme (Earth / Green)">
+        <i data-lucide="palette"></i> Theme
+      </button>
+      <div class="dock-divider" style="height: 24px; margin: 0 5px;"></div>
+      <button class="btn-tool" id="btn-clear">
+        <i data-lucide="file-plus"></i> New
+      </button>
+      <button class="btn-tool" id="btn-toggle-grid">
+        <i data-lucide="grid-3x3"></i> Grid
+      </button>
+      <button class="btn-tool primary" title="Save Codex (WIP)">
+        <i data-lucide="save"></i> Save
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- SCRIPTORIUM A (Left) -->
+    <aside class="sidebar">
+      <section>
+        <h2><i data-lucide="type"></i> Decorative Letters</h2>
+        <div id="grid-caps" class="asset-grid"></div>
+      </section>
+
+      <section>
+        <h2><i data-lucide="pen-tool"></i> Text tools</h2>
+        <div class="text-tools">
+          <div class="asset-item" id="tool-add-text" title="Add text block">
+            <i data-lucide="plus"></i>
+          </div>
+          <div class="asset-item" id="tool-cycle-text-color" title="Cycle ink color">
+            <i data-lucide="droplet"></i>
+          </div>
+        </div>
+      </section>
+    </aside>
+
+    <!-- CENTER CANVAS -->
+    <section class="canvas-area">
+      <div class="ruler-h"></div>
+      <div class="ruler-v"></div>
+
+      <div id="paper-viewport">
+        <div id="grid-layer" class="grid-overlay"></div>
+        <div class="demons-footer">
+          <img src="images/layout/lildemonlt.png" alt="Little demon" />
+          <img src="images/layout/pointingdemonlt.png" alt="Pointing demon" />
+        </div>
+      </div>
+
+      <!-- CONTEXT TOOLBAR -->
+      <div id="context-toolbar" class="context-toolbar">
+        <!-- Transform Section -->
+        <div class="toolbar-section">
+          <div class="toolbar-section-label">Transform</div>
+          <button class="toolbar-btn" id="btn-scale" title="Scale"><i data-lucide="maximize-2"></i></button>
+          <button class="toolbar-btn" id="btn-rotate" title="Rotate"><i data-lucide="rotate-cw"></i></button>
+          <button class="toolbar-btn" id="btn-flip-h" title="Flip Horizontal"><i data-lucide="mirror-horizontal"></i></button>
+          <button class="toolbar-btn" id="btn-flip-v" title="Flip Vertical"><i data-lucide="mirror-vertical"></i></button>
+        </div>
+
+        <!-- Scale Slider (hidden by default) -->
+        <div id="scale-slider-container" style="display: none;">
+          <label class="slider-label">Scale: <span id="scale-value">100%</span></label>
+          <input type="range" id="scale-slider" class="toolbar-slider" min="0.5" max="3" step="0.1" value="1">
+        </div>
+
+        <!-- Rotate Slider (hidden by default) -->
+        <div id="rotate-slider-container" style="display: none;">
+          <label class="slider-label">Rotate: <span id="rotate-value">0°</span></label>
+          <input type="range" id="rotate-slider" class="toolbar-slider" min="0" max="360" step="1" value="0">
+        </div>
+
+        <!-- Border Repeat (only for borders) -->
+        <div id="border-repeat-section" class="toolbar-section" style="display: none;">
+          <div class="toolbar-section-label">Border Tools</div>
+          <button class="toolbar-btn" id="btn-repeat-h" title="Repeat Horizontal"><i data-lucide="arrow-right"></i></button>
+          <button class="toolbar-btn" id="btn-repeat-v" title="Repeat Vertical"><i data-lucide="arrow-down"></i></button>
+        </div>
+
+        <!-- Duplicate & Delete Section -->
+        <div class="toolbar-section">
+          <div class="toolbar-section-label">Actions</div>
+          <button class="toolbar-btn" id="btn-duplicate" title="Duplicate"><i data-lucide="copy"></i></button>
+          <button class="toolbar-btn danger" id="btn-delete" title="Delete"><i data-lucide="trash-2"></i></button>
+        </div>
+      </div>
+
+      <!-- TEXT TOOLBAR -->
+      <div id="text-toolbar" class="text-toolbar">
+        <div class="text-toolbar-group">
+          <select id="text-font" class="toolbar-btn" style="padding: 4px 6px; border: 1px solid var(--accent-color); background: transparent; color: var(--text-main); font-size: 0.7rem; min-width: 80px;">
+            <option value="capo1880">Capo 1880</option>
+            <option value="pfeffermediaeval">Pfeffer Medieval</option>
+            <option value="codexmanesse">Codex Manesse</option>
+            <option value="cissanthemos">Cissanthemos</option>
+            <option value="hicopus">Hoc Opus</option>
+            <option value="icigist">Ici Gist</option>
+            <option value="indiebusillis">Indie Busillis</option>
+            <option value="litteraeignotae">Litterae Ignotae</option>
+            <option value="malatemporacurrunt">Mala Tempora Currunt</option>
+            <option value="pfeffersimpelgotisch">Pfeffer Simpel Gotisch</option>
+            <option value="quariteregnumdei">Quaerite Regnum Dei</option>
+            <option value="sprangalongobarda">Spranga Longobarda</option>
+            <option value="vulnus">Vulnus</option>
+            <option value="zifferaveneta">Ziffera Veneta</option>
+            <option value="andiamoabruciarglilacasa">Andiamo A Bruciar Glilacasa</option>
+            <option value="capoecclesia">Capo Ecclesia</option>
+            <option value="capolinea">Capo Linea</option>
+          </select>
+        </div>
+        <div class="text-toolbar-group">
+          <button class="toolbar-btn" id="btn-text-bold" title="Bold"><i data-lucide="bold"></i></button>
+          <button class="toolbar-btn" id="btn-text-italic" title="Italic"><i data-lucide="italic"></i></button>
+          <button class="toolbar-btn" id="btn-text-underline" title="Underline"><i data-lucide="underline"></i></button>
+        </div>
+        <div class="text-toolbar-group">
+          <button class="toolbar-btn" id="btn-text-align-left" title="Align Left"><i data-lucide="align-left"></i></button>
+          <button class="toolbar-btn" id="btn-text-align-center" title="Align Center"><i data-lucide="align-center"></i></button>
+          <button class="toolbar-btn" id="btn-text-align-right" title="Align Right"><i data-lucide="align-right"></i></button>
+        </div>
+        <div class="text-toolbar-group">
+          <button class="toolbar-btn" id="btn-text-color" title="Text Color"><i data-lucide="droplet"></i></button>
+          <input type="color" id="text-color-picker" style="width: 26px; height: 26px; border: 1px solid var(--accent-color); border-radius: 6px; cursor: pointer; padding: 0;">
+        </div>
+        <div class="text-toolbar-group">
+          <input type="range" id="text-size-slider" class="toolbar-slider" min="12" max="72" step="2" value="26" style="width: 80px;">
+          <span id="text-size-value" style="font-size: 0.65rem; color: var(--text-main); min-width: 35px; text-align: center;">26px</span>
+        </div>
+      </div>
+      <div class="dock">
+        <button id="bg-prev-btn"><i data-lucide="chevron-left"></i></button>
+        <span id="bg-name">Loading background...</span>
+        <button id="bg-next-btn"><i data-lucide="chevron-right"></i></button>
+        <div class="dock-divider"></div>
+        <button id="dock-add-text-btn">
+          <i data-lucide="type"></i> Text block
+        </button>
+      </div>
+
+      <!-- ZOOM CONTROL -->
+      <div id="zoom-control">
+        <span id="zoom-value">100%</span>
+        <input type="range" id="zoom-slider" min="50" max="300" step="10" value="100">
+      </div>
+    </section>
+
+    <!-- SCRIPTORIUM B (Right) -->
+    <aside class="sidebar sidebar-right">
+      <section>
+        <h2><i data-lucide="frame"></i> Lines & Borders</h2>
+        <div id="grid-borders" class="asset-grid"></div>
+      </section>
+
+      <section>
+        <h2><i data-lucide="sparkles"></i> Marginalia</h2>
+        <div id="grid-marginalias" class="asset-grid"></div>
+      </section>
+    </aside>
+  </main>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    });
+
+    const ASSETS = {
+      backgrounds: [
+        { name: "Horae ad usum Trecensem (1415)", src: "images/background/horae_ad_usum_trecensem_1415-20.png" },
+        { name: "Chansonnier Cordiforme", src: "images/background/chansonnier_cordiforme_de_montchenu.png" },
+        { name: "Liège – Book of Hours", src: "images/background/liège_book_of_hours_ms_w16.png" },
+        { name: "Belgium 1480, MS M.493", src: "images/background/book_of_hours_belgium_1480_ms_m493.jpg" },
+        { name: "Horae ad usum Trecensem II", src: "images/background/horae_ad_usum_trecensem_1415-20_2.jpg" },
+        { name: "Les voeux du paon", src: "images/background/les_voeux_du_paon_1350.jpg" },
+        { name: "Plain parchment", src: "images/background/parchment.jpg" },
+      ],
+      caps: [
+        { id: "cap_a", src: "images/caps/a.png" },
+        { id: "cap_b", src: "images/caps/b.png" },
+        { id: "cap_c", src: "images/caps/c.png" },
+        { id: "cap_d", src: "images/caps/d.png" },
+        { id: "cap_e", src: "images/caps/e.png" },
+        { id: "cap_f_hist", src: "images/caps/f_scriptores_historiae_augustae.png" },
+        { id: "cap_g", src: "images/caps/g.png" },
+        { id: "cap_h", src: "images/caps/h.png" },
+        { id: "cap_i_hist", src: "images/caps/i_scriptores_historiae_augustae.png" },
+        { id: "cap_j", src: "images/caps/j.png" },
+        { id: "cap_k", src: "images/caps/k.png" },
+        { id: "cap_l", src: "images/caps/l.png" },
+        { id: "cap_m", src: "images/caps/m.png" },
+        { id: "cap_n", src: "images/caps/n.png" },
+        { id: "cap_o", src: "images/caps/o.png" },
+        { id: "cap_p_hist", src: "images/caps/p_scriptores_historiae_augustae.png" },
+        { id: "cap_r", src: "images/caps/r.png" },
+        { id: "cap_s", src: "images/caps/s.png" },
+        { id: "cap_t_hist", src: "images/caps/t_scriptores_historiae_augustae.png" },
+        { id: "cap_u", src: "images/caps/u.png" },
+        { id: "cap_w", src: "images/caps/w.png" },
+        { id: "cap_y", src: "images/caps/y.png" },
+        { id: "cap_z", src: "images/caps/z.png" },
+      ],
+      borders: [
+        { id: "border_goatbird", src: "images/border/lutterell_goatbird_sm.png" },
+        { id: "border_rat", src: "images/border/luttrell_rat_eating_fish_sm.png" },
+        { id: "border_liege_2", src: "images/border/liège_book_of_hours_ms_w16_2.png" },
+        { id: "border_liege_3", src: "images/border/liège_book_of_hours_ms_w16_3.png" },
+        { id: "border_liege_5", src: "images/border/liège_book_of_hours_ms_w16_5.png" },
+        { id: "border_liege_6", src: "images/border/liège_book_of_hours_ms_w16_6.png" },
+      ],
+      marginalias: [
+        { id: "marg_rabbit1", src: "images/marginalias/breviary_of_renaud_1302-1303_rabbit1_sm.png" },
+        { id: "marg_snailcat", src: "images/marginalias/paris_bible_1485_snailcat_sm.png" },
+        { id: "marg_snailwoman", src: "images/marginalias/heures_de_jacques_de_rambures_1460_snailwoman.png" },
+        { id: "marg_snailberries", src: "images/marginalias/bruges_book_of_hours_1510-1525_snailberries_sm.png" },
+        { id: "marg_hedgehog", src: "images/marginalias/book_of_hours_france_paris_1420-1425_hedgehog_sm.png" },
+        { id: "marg_birdreader", src: "images/marginalias/french_book_of_hours_14birdreader_sm.png" },
+        { id: "marg_luteskeleman", src: "images/marginalias/froissarts_chronicles_luteskeleman_sm.png" },
+        { id: "marg_amphisbaena", src: "images/marginalias/luttrell.f.50r_amphisbaena_sm.png" },
+        { id: "marg_fishman", src: "images/marginalias/luttrell_fishman_sm.png" },
+        { id: "marg_bat", src: "images/marginalias/luttrell_bat_sm.png" },
+      ],
+    };
+
+    let currentBgIndex = 0;
+    let nextZIndex = 20;
+
+    function renderBackground() {
+      const bg = ASSETS.backgrounds[currentBgIndex];
+      const canvas = document.getElementById("paper-viewport");
+      const label = document.getElementById("bg-name");
+      canvas.style.backgroundImage = `url('${bg.src}')`;
+      label.textContent = bg.name;
+    }
+
+    function changeBackground(delta) {
+      const total = ASSETS.backgrounds.length;
+      currentBgIndex = (currentBgIndex + delta + total) % total;
+      renderBackground();
+    }
+
+    function initPalettes() {
+      // Caps
+      const capsGrid = document.getElementById("grid-caps");
+      ASSETS.caps.forEach((item) => {
+        const div = document.createElement("div");
+        div.className = "asset-item";
+        div.innerHTML = `<img src="${item.src}" alt="${item.id}" />`;
+        div.addEventListener("click", () => addToCanvas(item.src, "image"));
+        capsGrid.appendChild(div);
+      });
+
+      // Borders
+      const bordersGrid = document.getElementById("grid-borders");
+      ASSETS.borders.forEach((item) => {
+        const div = document.createElement("div");
+        div.className = "asset-item";
+        div.innerHTML = `<img src="${item.src}" alt="${item.id}" />`;
+        div.addEventListener("click", () => addToCanvas(item.src, "border"));
+        bordersGrid.appendChild(div);
+      });
+
+      // Marginalias
+      const margGrid = document.getElementById("grid-marginalias");
+      ASSETS.marginalias.forEach((item) => {
+        const div = document.createElement("div");
+        div.className = "asset-item";
+        div.innerHTML = `<img src="${item.src}" alt="${item.id}" />`;
+        div.addEventListener("click", () => addToCanvas(item.src, "image"));
+        margGrid.appendChild(div);
+      });
+    }
+
+    let lastMousePos = { x: 0, y: 0 };
+
+    document.addEventListener("mousemove", (e) => {
+      lastMousePos = { x: e.pageX, y: e.pageY };
+    });
+
+    function addToCanvas(src, type) {
+      const canvas = document.getElementById("paper-viewport");
+      const canvasRect = canvas.getBoundingClientRect();
+      
+      const el = document.createElement("div");
+      el.className = "draggable-element";
+      el.style.zIndex = String(nextZIndex++);
+      el.setAttribute("data-type", type);
+
+      if (type === "text") {
+        el.innerHTML = `<div contenteditable="true" class="text-block pfeffermediaeval" spellcheck="false" style="outline: 2px dashed var(--accent-color); padding: 8px; white-space: pre-wrap; word-wrap: break-word; min-height: 20px;" data-placeholder="Type here...">Type here...</div>`;
+        el.style.width = "200px";
+        el.style.height = "auto";
+        el.style.touchAction = "none";
+        el.style.userSelect = "none";
+        
+        // Agregar listeners para contenteditable que permitan drag sin editar
+        const textBlock = el.querySelector(".text-block");
+        
+        // Placeholder logic
+        textBlock.addEventListener("focus", () => {
+          if (textBlock.textContent === "Type here...") {
+            textBlock.textContent = "";
+          }
+          textBlock.style.pointerEvents = "auto";
+        });
+        
+        textBlock.addEventListener("blur", () => {
+          if (textBlock.textContent.trim() === "") {
+            textBlock.textContent = "Type here...";
+          }
+          textBlock.style.pointerEvents = "auto";
+        });
+        
+        textBlock.addEventListener("mousedown", (e) => {
+          e.stopPropagation();
+        });
+      } else if (type === "border") {
+        el.innerHTML = `<img src="${src}" style="width: 260px; height:auto; display: block;" draggable="false" onerror="this.style.border='2px solid red'"/>`;
+      } else {
+        el.innerHTML = `<img src="${src}" style="width: 140px; height:auto; display: block;" draggable="false" onerror="this.style.border='2px solid red'"/>`;
+      }
+
+      el.addEventListener("mousedown", (ev) => {
+        ev.stopPropagation();
+        selectElement(el);
+      });
+      
+      // Calcular posición relativa al canvas basada en la posición del mouse
+      let x, y;
+      
+      // Verificar si el mouse está dentro del canvas
+      if (lastMousePos.x > canvasRect.left && lastMousePos.x < canvasRect.right &&
+          lastMousePos.y > canvasRect.top && lastMousePos.y < canvasRect.bottom) {
+        // Mouse está dentro del canvas, calcular posición relativa
+        x = lastMousePos.x - canvasRect.left - 70;
+        y = lastMousePos.y - canvasRect.top - 70;
+      } else {
+        // Mouse está fuera, centrar el elemento en el canvas
+        x = (750 / 2) - 70;
+        y = (900 / 2) - 70;
+      }
+      
+      // Asegurar que está dentro de los márgenes (40px en cada lado)
+      const MARGINS = 40;
+      const MAX_WIDTH = 750 - (MARGINS * 2);
+      const MAX_HEIGHT = 900 - (MARGINS * 2);
+      x = Math.max(MARGINS, Math.min(x, MARGINS + MAX_WIDTH - 140));
+      y = Math.max(MARGINS, Math.min(y, MARGINS + MAX_HEIGHT - 140));
+      
+      // NO usar left/top, solo transform
+      el.style.left = "0px";
+      el.style.top = "0px";
+      el.setAttribute("data-x", x);
+      el.setAttribute("data-y", y);
+      el.style.transform = `translate(${x}px, ${y}px)`;
+      
+      canvas.appendChild(el);
+      makeDraggable(el);
+      selectElement(el);
+    }
+
+    function selectElement(el) {
+      document.querySelectorAll(".draggable-element").forEach((item) => item.classList.remove("selected"));
+      el.classList.add("selected");
+      el.style.zIndex = String(++nextZIndex);
+      showContextToolbar(el);
+    }
+
+    function showContextToolbar(el) {
+      const toolbar = document.getElementById("context-toolbar");
+      const textToolbar = document.getElementById("text-toolbar");
+      const canvas = document.getElementById("paper-viewport");
+      const rect = el.getBoundingClientRect();
+      const canvasRect = canvas.getBoundingClientRect();
+      
+      // Detectar el tipo de elemento
+      const isText = el.querySelector(".text-block") !== null;
+      const isBorder = el.getAttribute("data-type") === "border";
+      
+      // Mostrar/ocultar secciones específicas
+      document.getElementById("border-repeat-section").style.display = isBorder ? "flex" : "none";
+      document.getElementById("scale-slider-container").style.display = "none";
+      document.getElementById("rotate-slider-container").style.display = "none";
+      
+      if (isText) {
+        // Mostrar text toolbar responsivamente
+        toolbar.classList.remove("visible");
+        textToolbar.classList.add("visible");
+        
+        // Posicionar debajo del elemento, centrado horizontalmente y dentro de la pantalla
+        let toolbarTop = rect.bottom + 10;
+        let toolbarLeft = rect.left;
+        
+        // Ajustar si se sale de la pantalla (lado derecho)
+        const maxRight = window.innerWidth - 20;
+        if (toolbarLeft + 600 > maxRight) { // Aproximadamente 600px de ancho el toolbar
+          toolbarLeft = maxRight - 600;
+        }
+        
+        // Ajustar si se sale de la pantalla (lado izquierdo)
+        if (toolbarLeft < 10) {
+          toolbarLeft = 10;
+        }
+        
+        textToolbar.style.position = "fixed";
+        textToolbar.style.top = Math.max(10, toolbarTop) + "px";
+        textToolbar.style.left = Math.max(10, toolbarLeft) + "px";
+        textToolbar.style.bottom = "auto";
+        textToolbar.style.right = "auto";
+        
+        updateTextToolbar(el);
+      } else {
+        // Mostrar context toolbar
+        textToolbar.classList.remove("visible");
+        toolbar.classList.add("visible");
+        let top = rect.top - canvasRect.top - 50;
+        let left = rect.left - canvasRect.left + rect.width / 2 - 90;
+        toolbar.style.top = Math.max(0, top) + "px";
+        toolbar.style.left = Math.max(0, left) + "px";
+        
+        // Posicionar sliders cerca de la toolbar
+        const scaleSlider = document.getElementById("scale-slider-container");
+        const rotateSlider = document.getElementById("rotate-slider-container");
+        
+        scaleSlider.style.position = "fixed";
+        scaleSlider.style.top = (rect.top + rect.height + 10) + "px";
+        scaleSlider.style.left = Math.max(10, rect.left) + "px";
+        scaleSlider.style.bottom = "auto";
+        scaleSlider.style.right = "auto";
+        
+        rotateSlider.style.position = "fixed";
+        rotateSlider.style.top = (rect.top + rect.height + 70) + "px";
+        rotateSlider.style.left = Math.max(10, rect.left) + "px";
+        rotateSlider.style.bottom = "auto";
+        rotateSlider.style.right = "auto";
+      }
+      
+      // Guardar referencia al elemento actual
+      currentSelectedElement = el;
+      
+      // Re-inicializar Lucide para los iconos
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    }
+
+    function updateTextToolbar(el) {
+      const textBlock = el.querySelector(".text-block");
+      if (!textBlock) return;
+      
+      // Actualizar font
+      const fontClass = Array.from(textBlock.classList).find(c => ["capo1880", "pfeffermediaeval", "codexmanesse", "cissanthemos", "hicopus", "icigist", "indiebusillis", "litteraeignotae", "malatemporacurrunt", "pfeffersimpelgotisch", "quariteregnumdei", "sprangalongobarda", "vulnus", "zifferaveneta", "andiamoabruciarglilacasa", "capoecclesia", "capolinea"].includes(c)) || "pfeffermediaeval";
+      document.getElementById("text-font").value = fontClass;
+      
+      // Actualizar color
+      const color = textBlock.className.includes("text-red") ? "#850d00" : textBlock.className.includes("text-gold") ? "#8a731d" : "#1a1a1a";
+      document.getElementById("text-color-picker").value = color;
+      
+      // Actualizar tamaño
+      const fontSize = parseInt(window.getComputedStyle(textBlock).fontSize) || 26;
+      document.getElementById("text-size-slider").value = fontSize;
+      document.getElementById("text-size-value").textContent = fontSize + "px";
+    }
+
+    function hideContextToolbar() {
+      const toolbar = document.getElementById("context-toolbar");
+      const textToolbar = document.getElementById("text-toolbar");
+      toolbar.classList.remove("visible");
+      textToolbar.classList.remove("visible");
+      currentSelectedElement = null;
+    }
+
+    let currentSelectedElement = null;
+
+    function clearCanvas() {
+      const canvas = document.getElementById("paper-viewport");
+      canvas.querySelectorAll(".draggable-element").forEach((el) => el.remove());
+    }
+
+    function cycleTextColor() {
+      const target = document.querySelector(".draggable-element.selected .text-block");
+      if (!target) return;
+      const classes = ["black", "text-red", "text-gold"];
+      const current = target.dataset.color || "black";
+      const idx = classes.indexOf(current);
+      const next = classes[(idx + 1) % classes.length];
+
+      target.classList.remove("text-red", "text-gold");
+      if (next === "text-red") target.classList.add("text-red");
+      if (next === "text-gold") target.classList.add("text-gold");
+      target.dataset.color = next;
+    }
+
+    function makeDraggable(el) {
+      const GRID_SIZE = 30;
+      const MARGINS = { top: 40, left: 40, right: 40, bottom: 40 };
+      const canvas = document.getElementById("paper-viewport");
+      const isText = el.querySelector(".text-block") !== null;
+      
+      // Configurar redimensionamiento solo para text blocks
+      if (isText) {
+        el.classList.add("text-resizable");
+        interact(el).resizable({
+          edges: { left: true, right: true, top: true, bottom: true },
+          listeners: {
+            move(event) {
+              let { x, y } = event.target.dataset;
+              x = (parseFloat(x) || 0);
+              y = (parseFloat(y) || 0);
+              
+              Object.assign(event.target.style, {
+                width: `${event.rect.width}px`,
+                height: `${event.rect.height}px`,
+              });
+            },
+          },
+          modifiers: [
+            interact.modifiers.restrictSize({
+              min: { width: 100, height: 40 }
+            }),
+          ],
+        });
+      } else {
+        interact(el).resizable({
+          edges: { left: false, right: false, top: false, bottom: false },
+          listeners: {}
+        });
+      }
+
+      interact(el).draggable({
+        modifiers: [
+          interact.modifiers.snap({
+            targets: [
+              interact.snappers.grid({ 
+                x: GRID_SIZE, 
+                y: GRID_SIZE,
+                range: GRID_SIZE / 2,
+                offset: { x: MARGINS.left, y: MARGINS.top }
+              })
+            ],
+            relativePoints: [{ x: 0, y: 0 }],
+            range: GRID_SIZE,
+            offset: "parent"
+          })
+        ],
+        listeners: {
+          move(event) {
+            const target = event.target;
+            let x = (parseFloat(target.getAttribute("data-x")) || 0) + event.dx;
+            let y = (parseFloat(target.getAttribute("data-y")) || 0) + event.dy;
+            
+            // Boundary checking - mantener dentro del canvas con márgenes
+            // Obtener el tamaño real del elemento (sin incluir márgenes de transformación)
+            const innerWidth = 750 - MARGINS.left - MARGINS.right; // 670
+            const innerHeight = 900 - MARGINS.top - MARGINS.bottom; // 820
+            
+            // Ancho y alto del elemento
+            const rect = target.getBoundingClientRect();
+            const elWidth = Math.ceil(rect.width);
+            const elHeight = Math.ceil(rect.height);
+            
+            // Limitar a márgenes del canvas (40px en cada lado)
+            x = Math.max(MARGINS.left, Math.min(x, MARGINS.left + innerWidth - elWidth));
+            y = Math.max(MARGINS.top, Math.min(y, MARGINS.top + innerHeight - elHeight));
+            
+            target.style.transform = `translate(${x}px, ${y}px)`;
+            target.setAttribute("data-x", x);
+            target.setAttribute("data-y", y);
+          },
+          end(event) {
+            const target = event.target;
+            const x = parseFloat(target.getAttribute("data-x")) || 0;
+            const y = parseFloat(target.getAttribute("data-y")) || 0;
+            console.log(`Elemento movido a: x=${x}, y=${y}`);
+          }
+        },
+      });
+    }
+
+    // === GESTIÓN DE TEMAS ===
+    function toggleTheme() {
+      const body = document.body;
+      if (body.classList.contains("theme-earth")) {
+        body.classList.replace("theme-earth", "theme-green");
+      } else {
+        body.classList.replace("theme-green", "theme-earth");
+      }
+    }
+
+    window.addEventListener("load", () => {
+      initPalettes();
+      renderBackground();
+
+      // Deseleccionar al hacer clic en fondo
+      document.getElementById("paper-viewport").addEventListener("mousedown", () => {
+        document.querySelectorAll(".draggable-element").forEach((el) => el.classList.remove("selected"));
+      });
+
+      // Botones generales
+      document.getElementById("btn-clear").addEventListener("click", clearCanvas);
+      document.getElementById("btn-toggle-grid").addEventListener("click", () => {
+        const grid = document.getElementById("grid-layer");
+        grid.style.display = grid.style.display === "block" ? "none" : "block";
+      });
+      
+      // Botón de tema
+      document.getElementById("btn-toggle-theme").addEventListener("click", toggleTheme);
+
+      // Fondos y texto
+      document.getElementById("bg-prev-btn").addEventListener("click", () => changeBackground(-1));
+      document.getElementById("bg-next-btn").addEventListener("click", () => changeBackground(1));
+      document.getElementById("tool-add-text").addEventListener("click", () => addToCanvas(null, "text"));
+      document.getElementById("dock-add-text-btn").addEventListener("click", () => addToCanvas(null, "text"));
+      document.getElementById("tool-cycle-text-color").addEventListener("click", cycleTextColor);
+
+      // === CONTEXT TOOLBAR HANDLERS ===
+      // Scale button
+      document.getElementById("btn-scale").addEventListener("click", () => {
+        const container = document.getElementById("scale-slider-container");
+        container.style.display = container.style.display === "none" ? "block" : "none";
+      });
+
+      // Scale slider
+      document.getElementById("scale-slider").addEventListener("input", (e) => {
+        if (!currentSelectedElement) return;
+        const scale = parseFloat(e.target.value);
+        const x = parseFloat(currentSelectedElement.getAttribute("data-x")) || 0;
+        const y = parseFloat(currentSelectedElement.getAttribute("data-y")) || 0;
+        const rotate = parseFloat(currentSelectedElement.getAttribute("data-rotate")) || 0;
+        currentSelectedElement.setAttribute("data-scale", scale);
+        currentSelectedElement.style.transform = `translate(${x}px, ${y}px) rotate(${rotate}deg) scale(${scale})`;
+        document.getElementById("scale-value").textContent = Math.round(scale * 100) + "%";
+      });
+
+      // Rotate button
+      document.getElementById("btn-rotate").addEventListener("click", () => {
+        const container = document.getElementById("rotate-slider-container");
+        container.style.display = container.style.display === "none" ? "block" : "none";
+      });
+
+      // Rotate slider
+      document.getElementById("rotate-slider").addEventListener("input", (e) => {
+        if (!currentSelectedElement) return;
+        const angle = parseFloat(e.target.value);
+        const x = parseFloat(currentSelectedElement.getAttribute("data-x")) || 0;
+        const y = parseFloat(currentSelectedElement.getAttribute("data-y")) || 0;
+        const scale = parseFloat(currentSelectedElement.getAttribute("data-scale")) || 1;
+        currentSelectedElement.setAttribute("data-rotate", angle);
+        currentSelectedElement.style.transform = `translate(${x}px, ${y}px) rotate(${angle}deg) scale(${scale})`;
+        document.getElementById("rotate-value").textContent = angle + "°";
+      });
+
+      // Flip Horizontal
+      document.getElementById("btn-flip-h").addEventListener("click", () => {
+        if (!currentSelectedElement) return;
+        const img = currentSelectedElement.querySelector("img");
+        if (img) {
+          const flipped = img.getAttribute("data-flip-h") === "true";
+          img.style.transform = flipped ? "scaleX(1)" : "scaleX(-1)";
+          img.setAttribute("data-flip-h", !flipped);
+        }
+      });
+
+      // Flip Vertical
+      document.getElementById("btn-flip-v").addEventListener("click", () => {
+        if (!currentSelectedElement) return;
+        const img = currentSelectedElement.querySelector("img");
+        if (img) {
+          const flipped = img.getAttribute("data-flip-v") === "true";
+          img.style.transform = flipped ? "scaleY(1)" : "scaleY(-1)";
+          img.setAttribute("data-flip-v", !flipped);
+        }
+      });
+
+      // Duplicate
+      document.getElementById("btn-duplicate").addEventListener("click", () => {
+        if (!currentSelectedElement) return;
+        const clone = currentSelectedElement.cloneNode(true);
+        const x = parseFloat(currentSelectedElement.getAttribute("data-x")) || 0;
+        const y = parseFloat(currentSelectedElement.getAttribute("data-y")) || 0;
+        const scale = parseFloat(currentSelectedElement.getAttribute("data-scale")) || 1;
+        const rotate = parseFloat(currentSelectedElement.getAttribute("data-rotate")) || 0;
+        
+        // Offset del duplicado, respetando los márgenes
+        let newX = x + 30;
+        let newY = y + 30;
+        
+        // Asegurar que el duplicado está dentro del canvas
+        const MARGINS = 40;
+        const MAX_WIDTH = 750 - (MARGINS * 2);
+        const MAX_HEIGHT = 900 - (MARGINS * 2);
+        newX = Math.max(MARGINS, Math.min(newX, MARGINS + MAX_WIDTH - 140));
+        newY = Math.max(MARGINS, Math.min(newY, MARGINS + MAX_HEIGHT - 140));
+        
+        clone.setAttribute("data-x", newX);
+        clone.setAttribute("data-y", newY);
+        clone.setAttribute("data-scale", scale);
+        clone.setAttribute("data-rotate", rotate);
+        clone.style.transform = `translate(${newX}px, ${newY}px) rotate(${rotate}deg) scale(${scale})`;
+        
+        const canvas = document.getElementById("paper-viewport");
+        canvas.appendChild(clone);
+        makeDraggable(clone);
+        selectElement(clone);
+      });
+
+      // Delete
+      document.getElementById("btn-delete").addEventListener("click", () => {
+        if (!currentSelectedElement) return;
+        currentSelectedElement.remove();
+        hideContextToolbar();
+      });
+
+      // Border Repeat Horizontal
+      document.getElementById("btn-repeat-h").addEventListener("click", () => {
+        if (!currentSelectedElement) return;
+        repeatBorder(currentSelectedElement, "horizontal");
+      });
+
+      // Border Repeat Vertical
+      document.getElementById("btn-repeat-v").addEventListener("click", () => {
+        if (!currentSelectedElement) return;
+        repeatBorder(currentSelectedElement, "vertical");
+      });
+
+      // Hide toolbar cuando se deselecciona
+      document.getElementById("paper-viewport").addEventListener("mousedown", (e) => {
+        if (e.target === document.getElementById("paper-viewport") || e.target.closest(".grid-overlay")) {
+          hideContextToolbar();
+        }
+      });
+
+      // === TEXT TOOLBAR HANDLERS ===
+      // Font selector
+      document.getElementById("text-font").addEventListener("change", (e) => {
+        if (!currentSelectedElement) return;
+        const textBlock = currentSelectedElement.querySelector(".text-block");
+        if (!textBlock) return;
+        textBlock.classList.remove("capo1880", "pfeffermediaeval", "codexmanesse", "cissanthemos", "hicopus", "icigist", "indiebusillis", "litteraeignotae", "malatemporacurrunt", "pfeffersimpelgotisch", "quariteregnumdei", "sprangalongobarda", "vulnus", "zifferaveneta", "andiamoabruciarglilacasa", "capoecclesia", "capolinea");
+        if (e.target.value) {
+          textBlock.classList.add(e.target.value);
+        }
+      });
+
+      // Text Bold
+      document.getElementById("btn-text-bold").addEventListener("click", (e) => {
+        if (!currentSelectedElement) return;
+        const textBlock = currentSelectedElement.querySelector(".text-block");
+        if (!textBlock) return;
+        textBlock.style.fontWeight = textBlock.style.fontWeight === "bold" ? "normal" : "bold";
+        e.target.style.borderColor = textBlock.style.fontWeight === "bold" ? "var(--accent-bright)" : "transparent";
+      });
+
+      // Text Italic
+      document.getElementById("btn-text-italic").addEventListener("click", (e) => {
+        if (!currentSelectedElement) return;
+        const textBlock = currentSelectedElement.querySelector(".text-block");
+        if (!textBlock) return;
+        textBlock.style.fontStyle = textBlock.style.fontStyle === "italic" ? "normal" : "italic";
+        e.target.style.borderColor = textBlock.style.fontStyle === "italic" ? "var(--accent-bright)" : "transparent";
+      });
+
+      // Text Underline
+      document.getElementById("btn-text-underline").addEventListener("click", (e) => {
+        if (!currentSelectedElement) return;
+        const textBlock = currentSelectedElement.querySelector(".text-block");
+        if (!textBlock) return;
+        textBlock.style.textDecoration = textBlock.style.textDecoration === "underline" ? "none" : "underline";
+        e.target.style.borderColor = textBlock.style.textDecoration === "underline" ? "var(--accent-bright)" : "transparent";
+      });
+
+      // Text Align Left
+      document.getElementById("btn-text-align-left").addEventListener("click", (e) => {
+        if (!currentSelectedElement) return;
+        const textBlock = currentSelectedElement.querySelector(".text-block");
+        if (!textBlock) return;
+        textBlock.style.textAlign = "left";
+      });
+
+      // Text Align Center
+      document.getElementById("btn-text-align-center").addEventListener("click", (e) => {
+        if (!currentSelectedElement) return;
+        const textBlock = currentSelectedElement.querySelector(".text-block");
+        if (!textBlock) return;
+        textBlock.style.textAlign = "center";
+      });
+
+      // Text Align Right
+      document.getElementById("btn-text-align-right").addEventListener("click", (e) => {
+        if (!currentSelectedElement) return;
+        const textBlock = currentSelectedElement.querySelector(".text-block");
+        if (!textBlock) return;
+        textBlock.style.textAlign = "right";
+      });
+
+      // Text Color Picker
+      document.getElementById("text-color-picker").addEventListener("input", (e) => {
+        if (!currentSelectedElement) return;
+        const textBlock = currentSelectedElement.querySelector(".text-block");
+        if (!textBlock) return;
+        textBlock.style.color = e.target.value;
+      });
+
+      // Text Size Slider
+      document.getElementById("text-size-slider").addEventListener("input", (e) => {
+        if (!currentSelectedElement) return;
+        const textBlock = currentSelectedElement.querySelector(".text-block");
+        if (!textBlock) return;
+        const size = parseFloat(e.target.value);
+        textBlock.style.fontSize = size + "px";
+        document.getElementById("text-size-value").textContent = size + "px";
+      });
+    });
+
+    // === BORDER REPEAT FUNCTION ===
+    function repeatBorder(el, direction) {
+      const img = el.querySelector("img");
+      if (!img) return;
+
+      const canvas = document.getElementById("paper-viewport");
+      const x = parseFloat(el.getAttribute("data-x")) || 0;
+      const y = parseFloat(el.getAttribute("data-y")) || 0;
+      const rect = img.getBoundingClientRect();
+      
+      // Determinar tamaño del borde
+      const width = rect.width;
+      const height = rect.height;
+      
+      // Número de repeticiones
+      const times = 2;
+      const MARGINS = 40;
+      const MAX_WIDTH = 750 - (MARGINS * 2);
+      const MAX_HEIGHT = 900 - (MARGINS * 2);
+
+      for (let i = 1; i < times; i++) {
+        const clone = el.cloneNode(true);
+        clone.style.zIndex = String(++nextZIndex);
+        
+        let newX = x;
+        let newY = y;
+        
+        if (direction === "horizontal") {
+          newX = x + (width * i);
+        } else if (direction === "vertical") {
+          newY = y + (height * i);
+        }
+        
+        // Asegurar que el clone está dentro del canvas
+        newX = Math.max(MARGINS, Math.min(newX, MARGINS + MAX_WIDTH - width));
+        newY = Math.max(MARGINS, Math.min(newY, MARGINS + MAX_HEIGHT - height));
+        
+        clone.setAttribute("data-x", newX);
+        clone.setAttribute("data-y", newY);
+        clone.style.transform = `translate(${newX}px, ${newY}px)`;
+        
+        canvas.appendChild(clone);
+        makeDraggable(clone);
+      }
+    }
+
+    // === ZOOM CONTROL ===
+    let currentZoom = 1;
+
+    // Zoom slider
+    document.getElementById("zoom-slider").addEventListener("input", (e) => {
+      const zoomPercent = parseFloat(e.target.value);
+      currentZoom = zoomPercent / 100;
+      const canvas = document.getElementById("paper-viewport");
+      canvas.style.transform = `scale(${currentZoom})`;
+      document.getElementById("zoom-value").textContent = zoomPercent + "%";
+    });
+
+    // Zoom con mouse wheel - registrar en múltiples elementos para asegurar capture
+    const wheelZoomHandler = (e) => {
+      e.preventDefault();
+      const zoomSlider = document.getElementById("zoom-slider");
+      const currentValue = parseInt(zoomSlider.value);
+      const delta = e.deltaY > 0 ? -10 : 10;
+      const newValue = Math.max(50, Math.min(300, currentValue + delta));
+      zoomSlider.value = newValue;
+      zoomSlider.dispatchEvent(new Event("input"));
+    };
+    
+    document.getElementById("paper-viewport").addEventListener("wheel", wheelZoomHandler, { passive: false });
+    document.querySelector(".canvas-area").addEventListener("wheel", wheelZoomHandler, { passive: false });
+  </script>
+</body>
+</html>

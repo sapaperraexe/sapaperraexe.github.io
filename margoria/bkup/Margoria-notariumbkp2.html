@@ -468,6 +468,118 @@
       border: 1px solid var(--accent-bright);
     }
 
+    /* === CONTEXT TOOLBAR === */
+    .context-toolbar {
+      position: absolute;
+      background: var(--panel-bg);
+      backdrop-filter: var(--backdrop-filter);
+      border: 1px solid var(--accent-color);
+      border-radius: 12px;
+      padding: 8px 12px;
+      display: none;
+      flex-direction: row;
+      gap: 4px;
+      z-index: 50;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      min-width: auto;
+      align-items: center;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+    }
+
+    .context-toolbar.visible {
+      display: flex;
+    }
+
+    /* === TRANSFORM HANDLES === */
+    .transform-handles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .transform-handles.visible {
+      pointer-events: auto;
+    }
+
+    .handle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: var(--accent-bright);
+      border: 2px solid var(--accent-color);
+      border-radius: 2px;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      z-index: 101;
+    }
+
+    .handle:hover {
+      background: var(--accent-color);
+      box-shadow: 0 0 8px var(--accent-bright);
+    }
+
+    .h-nw { top: 0%; left: 0%; cursor: nwse-resize; }
+    .h-n  { top: 0%; left: 50%; cursor: ns-resize; }
+    .h-ne { top: 0%; left: 100%; cursor: nesw-resize; }
+    .h-e  { top: 50%; left: 100%; cursor: ew-resize; }
+    .h-se { top: 100%; left: 100%; cursor: se-resize; }
+    .h-s  { top: 100%; left: 50%; cursor: ns-resize; }
+    .h-sw { top: 100%; left: 0%; cursor: sw-resize; }
+    .h-w  { top: 50%; left: 0%; cursor: ew-resize; }
+
+    .h-rot {
+      top: -45px;
+      left: 50%;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent-bright);
+      border: 2px solid var(--accent-color);
+      cursor: grab;
+    }
+
+    .h-rot:active {
+      cursor: grabbing;
+    }
+
+    .h-rot-line {
+      position: absolute;
+      top: -45px;
+      left: 50%;
+      height: 45px;
+      width: 2px;
+      background: var(--accent-color);
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+
+    #pivot-point {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border: 2px solid var(--accent-bright);
+      border-radius: 50%;
+      background: transparent;
+      cursor: move;
+      z-index: 102;
+    }
+
+    #pivot-point::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 4px;
+      height: 4px;
+      background: var(--accent-bright);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
 
     /* === TEXT TOOLBAR === */
     .text-toolbar {
@@ -526,6 +638,29 @@
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
     }
 
+    /* === SLIDER POPUPS === */
+    #scale-slider-container,
+    #rotate-slider-container {
+      position: fixed;
+      background: var(--panel-bg);
+      backdrop-filter: var(--backdrop-filter);
+      border: 1px solid var(--accent-color);
+      border-radius: 12px;
+      padding: 8px 12px;
+      display: none;
+      z-index: 51;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      min-width: 150px;
+      left: 20px;
+    }
+
+    #scale-slider-container {
+      top: 150px;
+    }
+
+    #rotate-slider-container {
+      top: 210px;
+    }
 
     #zoom-slider {
       width: 80px;
@@ -751,99 +886,6 @@
     @media (max-width: 700px) {
       #paper-viewport { transform: scale(0.55); }
     }
-	
-	 /* === CONTEXT TOOLBAR === */
-    
-    /* === CONTEXT TOOLBAR ESTILOS === */
-    .context-toolbar {
-      position: absolute;
-      background: var(--panel-bg);
-      backdrop-filter: var(--backdrop-filter);
-      border: 1px solid var(--accent-color);
-      border-radius: 12px;
-      padding: 8px 12px;
-      display: none;
-      flex-direction: row;
-      gap: 4px;
-      z-index: 50;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-      min-width: auto;
-      align-items: center;
-      flex-wrap: nowrap;
-      white-space: nowrap;
-    }
-
-    .context-toolbar.visible {
-      display: flex;
-    }
-
-    .toolbar-section {
-      display: flex;
-      gap: 4px;
-      align-items: center;
-      border-right: 1px solid rgba(151, 138, 75, 0.3);
-      padding-right: 4px;
-    }
-
-    .toolbar-section:last-of-type { border-right: none; }
-
-    /* === SLIDER POPUPS ESTILOS === */
-    #scale-slider-container,
-    #rotate-slider-container {
-      position: fixed;
-      background: var(--panel-bg);
-      backdrop-filter: var(--backdrop-filter);
-      border: 1px solid var(--accent-color);
-      border-radius: 12px;
-      padding: 8px 12px;
-      display: none;
-      z-index: 51;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-      min-width: 150px;
-    }
-
-    .slider-label {
-      font-size: 0.7rem;
-      color: var(--text-main);
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 4px;
-    }
-
-    /* === TOOLBAR BUTTONS ESTILOS === */
-    .toolbar-btn {
-      background: transparent;
-      border: 1px solid transparent;
-      color: var(--text-main);
-      padding: 4px;
-      border-radius: 6px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      width: 28px;
-      height: 28px;
-    }
-
-    .toolbar-btn:hover {
-      border-color: var(--accent-color);
-      color: var(--accent-bright);
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    .toolbar-btn.danger:hover {
-      background: rgba(133, 13, 0, 0.3);
-      color: var(--accent-red);
-      border-color: var(--accent-red);
-    }
-
-    input[type="range"] {
-      width: 100%;
-      height: 4px;
-      accent-color: var(--accent-color);
-      cursor: pointer;
-    }
   </style>
 </head>
 <body class="theme-green"> <!-- Clase inicial -->
@@ -906,39 +948,43 @@
         </div>
       </div>
 
-  <!-- Context Toolbar -->
-  
-  <!-- CONTEXT TOOLBAR ESTRUCTURA -->
-  <div id="context-toolbar" class="context-toolbar">
-    <div class="toolbar-section">
-      <button class="toolbar-btn" id="btn-scale"><i data-lucide="maximize"></i></button>
-      <button class="toolbar-btn" id="btn-rotate"><i data-lucide="rotate-cw"></i></button>
-    </div>
-    <div class="toolbar-section">
-      <button class="toolbar-btn" id="btn-flip-h"><i data-lucide="flip-horizontal"></i></button>
-      <button class="toolbar-btn" id="btn-flip-v"><i data-lucide="flip-vertical"></i></button>
-    </div>
-    <!-- Herramientas específicas para bordes -->
-    <div id="border-repeat-section" class="toolbar-section" style="display: none;">
-      <button class="toolbar-btn" id="btn-repeat-h"><i data-lucide="arrow-right"></i></button>
-      <button class="toolbar-btn" id="btn-repeat-v"><i data-lucide="arrow-down"></i></button>
-    </div>
-    <div class="toolbar-section">
-      <button class="toolbar-btn" id="btn-duplicate"><i data-lucide="copy"></i></button>
-      <button class="toolbar-btn danger" id="btn-delete"><i data-lucide="trash-2"></i></button>
-    </div>
-  </div>
+      <!-- CONTEXT TOOLBAR -->
+      <div id="context-toolbar" class="context-toolbar">
+        <!-- Transform Section -->
+        <div class="toolbar-section">
+          <div class="toolbar-section-label">Transform</div>
+          <button class="toolbar-btn" id="btn-scale" title="Scale"><i data-lucide="maximize-2"></i></button>
+          <button class="toolbar-btn" id="btn-rotate" title="Rotate"><i data-lucide="rotate-cw"></i></button>
+          <button class="toolbar-btn" id="btn-flip-h" title="Flip Horizontal"><i data-lucide="flip-horizontal-2"></i></button>
+          <button class="toolbar-btn" id="btn-flip-v" title="Flip Vertical"><i data-lucide="flip-vertical-2"></i></button>
+        </div>
 
-  <!-- CONTEXT TOOLBAR SLIDERS (Popups) -->
-  <div id="scale-slider-container">
-    <div class="slider-label"><span>Escala</span><span id="scale-value">100%</span></div>
-    <input type="range" id="scale-slider" min="0.2" max="3" step="0.1" value="1">
-  </div>
+        <!-- Scale Slider (hidden by default) -->
+        <div id="scale-slider-container" style="display: none;">
+          <label class="slider-label">Scale: <span id="scale-value">100%</span></label>
+          <input type="range" id="scale-slider" class="toolbar-slider" min="0.5" max="3" step="0.1" value="1">
+        </div>
 
-  <div id="rotate-slider-container">
-    <div class="slider-label"><span>Rotación</span><span id="rotate-value">0°</span></div>
-    <input type="range" id="rotate-slider" min="0" max="360" step="1" value="0">
-  </div>
+        <!-- Rotate Slider (hidden by default) -->
+        <div id="rotate-slider-container" style="display: none;">
+          <label class="slider-label">Rotate: <span id="rotate-value">0°</span></label>
+          <input type="range" id="rotate-slider" class="toolbar-slider" min="0" max="360" step="1" value="0">
+        </div>
+
+        <!-- Border Repeat (only for borders) -->
+        <div id="border-repeat-section" class="toolbar-section" style="display: none;">
+          <div class="toolbar-section-label">Border Tools</div>
+          <button class="toolbar-btn" id="btn-repeat-h" title="Repeat Horizontal"><i data-lucide="arrow-right"></i></button>
+          <button class="toolbar-btn" id="btn-repeat-v" title="Repeat Vertical"><i data-lucide="arrow-down"></i></button>
+        </div>
+
+        <!-- Duplicate & Delete Section -->
+        <div class="toolbar-section">
+          <div class="toolbar-section-label">Actions</div>
+          <button class="toolbar-btn" id="btn-duplicate" title="Duplicate"><i data-lucide="copy"></i></button>
+          <button class="toolbar-btn danger" id="btn-delete" title="Delete"><i data-lucide="trash-2"></i></button>
+        </div>
+      </div>
 
       <!-- TEXT TOOLBAR -->
       <div id="text-toolbar" class="text-toolbar">
@@ -1278,21 +1324,21 @@
         toolbar.style.top = Math.max(0, top) + "px";
         toolbar.style.left = Math.max(0, left) + "px";
         
-        <!-- // Posicionar sliders cerca de la toolbar -->
-        <!-- const scaleSlider = document.getElementById("scale-slider-container"); -->
-        <!-- const rotateSlider = document.getElementById("rotate-slider-container"); -->
+        // Posicionar sliders cerca de la toolbar
+        const scaleSlider = document.getElementById("scale-slider-container");
+        const rotateSlider = document.getElementById("rotate-slider-container");
         
-        <!-- scaleSlider.style.position = "fixed"; -->
-        <!-- scaleSlider.style.top = (rect.top + rect.height + 10) + "px"; -->
-        <!-- scaleSlider.style.left = Math.max(10, rect.left) + "px"; -->
-        <!-- scaleSlider.style.bottom = "auto"; -->
-        <!-- scaleSlider.style.right = "auto"; -->
+        scaleSlider.style.position = "fixed";
+        scaleSlider.style.top = (rect.top + rect.height + 10) + "px";
+        scaleSlider.style.left = Math.max(10, rect.left) + "px";
+        scaleSlider.style.bottom = "auto";
+        scaleSlider.style.right = "auto";
         
-        <!-- rotateSlider.style.position = "fixed"; -->
-        <!-- rotateSlider.style.top = (rect.top + rect.height + 70) + "px"; -->
-        <!-- rotateSlider.style.left = Math.max(10, rect.left) + "px"; -->
-        <!-- rotateSlider.style.bottom = "auto"; -->
-        <!-- rotateSlider.style.right = "auto"; -->
+        rotateSlider.style.position = "fixed";
+        rotateSlider.style.top = (rect.top + rect.height + 70) + "px";
+        rotateSlider.style.left = Math.max(10, rect.left) + "px";
+        rotateSlider.style.bottom = "auto";
+        rotateSlider.style.right = "auto";
       }
       
       // Guardar referencia al elemento actual
@@ -1458,43 +1504,6 @@
       });
     }
 
-    function duplicateSelectedElement() {
-        if (!currentSelectedElement) return;
-
-        const clone = currentSelectedElement.cloneNode(true);
-        
-        // FIX: Add the mousedown listener for selection that is lost during cloning
-        clone.addEventListener("mousedown", (ev) => {
-            ev.stopPropagation();
-            selectElement(clone);
-        });
-
-        const x = parseFloat(currentSelectedElement.getAttribute("data-x")) || 0;
-        const y = parseFloat(currentSelectedElement.getAttribute("data-y")) || 0;
-        const scale = parseFloat(currentSelectedElement.getAttribute("data-scale")) || 1;
-        const rotate = parseFloat(currentSelectedElement.getAttribute("data-rotate")) || 0;
-        
-        let newX = x + 30;
-        let newY = y + 30;
-        
-        const MARGINS = 40;
-        const MAX_WIDTH = 750 - (MARGINS * 2);
-        const MAX_HEIGHT = 900 - (MARGINS * 2);
-        newX = Math.max(MARGINS, Math.min(newX, MARGINS + MAX_WIDTH - 140));
-        newY = Math.max(MARGINS, Math.min(newY, MARGINS + MAX_HEIGHT - 140));
-        
-        clone.setAttribute("data-x", newX);
-        clone.setAttribute("data-y", newY);
-        clone.setAttribute("data-scale", scale);
-        clone.setAttribute("data-rotate", rotate);
-        clone.style.transform = `translate(${newX}px, ${newY}px) rotate(${rotate}deg) scale(${scale})`;
-        
-        const canvas = document.getElementById("paper-viewport");
-        canvas.appendChild(clone);
-        makeDraggable(clone);
-        selectElement(clone);
-    }
-
     // === GESTIÓN DE TEMAS ===
     function toggleTheme() {
       const body = document.body;
@@ -1541,7 +1550,6 @@
       document.getElementById("dock-add-text-btn").addEventListener("click", () => addToCanvas(null, "text"));
       document.getElementById("tool-cycle-text-color").addEventListener("click", cycleTextColor);
 
-     
       // === CONTEXT TOOLBAR HANDLERS ===
       // Scale button
       document.getElementById("btn-scale").addEventListener("click", () => {
@@ -1602,7 +1610,36 @@
       });
 
       // Duplicate
-      document.getElementById("btn-duplicate").addEventListener("click", duplicateSelectedElement);
+      document.getElementById("btn-duplicate").addEventListener("click", () => {
+        if (!currentSelectedElement) return;
+        const clone = currentSelectedElement.cloneNode(true);
+        const x = parseFloat(currentSelectedElement.getAttribute("data-x")) || 0;
+        const y = parseFloat(currentSelectedElement.getAttribute("data-y")) || 0;
+        const scale = parseFloat(currentSelectedElement.getAttribute("data-scale")) || 1;
+        const rotate = parseFloat(currentSelectedElement.getAttribute("data-rotate")) || 0;
+        
+        // Offset del duplicado, respetando los márgenes
+        let newX = x + 30;
+        let newY = y + 30;
+        
+        // Asegurar que el duplicado está dentro del canvas
+        const MARGINS = 40;
+        const MAX_WIDTH = 750 - (MARGINS * 2);
+        const MAX_HEIGHT = 900 - (MARGINS * 2);
+        newX = Math.max(MARGINS, Math.min(newX, MARGINS + MAX_WIDTH - 140));
+        newY = Math.max(MARGINS, Math.min(newY, MARGINS + MAX_HEIGHT - 140));
+        
+        clone.setAttribute("data-x", newX);
+        clone.setAttribute("data-y", newY);
+        clone.setAttribute("data-scale", scale);
+        clone.setAttribute("data-rotate", rotate);
+        clone.style.transform = `translate(${newX}px, ${newY}px) rotate(${rotate}deg) scale(${scale})`;
+        
+        const canvas = document.getElementById("paper-viewport");
+        canvas.appendChild(clone);
+        makeDraggable(clone);
+        selectElement(clone);
+      });
 
       // Delete
       document.getElementById("btn-delete").addEventListener("click", () => {
@@ -1640,7 +1677,6 @@
           hideContextToolbar();
         }
       });
-
 
       // === PANNING CON CLIC DERECHO ===
       document.getElementById("paper-viewport").addEventListener("mousedown", (e) => {
@@ -1764,7 +1800,34 @@
       });
 
       // Text Duplicate
-      document.getElementById("btn-text-duplicate").addEventListener("click", duplicateSelectedElement);
+      document.getElementById("btn-text-duplicate").addEventListener("click", () => {
+        if (!currentSelectedElement) return;
+        const clone = currentSelectedElement.cloneNode(true);
+        const x = parseFloat(currentSelectedElement.getAttribute("data-x")) || 0;
+        const y = parseFloat(currentSelectedElement.getAttribute("data-y")) || 0;
+        const scale = parseFloat(currentSelectedElement.getAttribute("data-scale")) || 1;
+        const rotate = parseFloat(currentSelectedElement.getAttribute("data-rotate")) || 0;
+        
+        let newX = x + 30;
+        let newY = y + 30;
+        
+        const MARGINS = 40;
+        const MAX_WIDTH = 750 - (MARGINS * 2);
+        const MAX_HEIGHT = 900 - (MARGINS * 2);
+        newX = Math.max(MARGINS, Math.min(newX, MARGINS + MAX_WIDTH - 140));
+        newY = Math.max(MARGINS, Math.min(newY, MARGINS + MAX_HEIGHT - 140));
+        
+        clone.setAttribute("data-x", newX);
+        clone.setAttribute("data-y", newY);
+        clone.setAttribute("data-scale", scale);
+        clone.setAttribute("data-rotate", rotate);
+        clone.style.transform = `translate(${newX}px, ${newY}px) rotate(${rotate}deg) scale(${scale})`;
+        
+        const canvas = document.getElementById("paper-viewport");
+        canvas.appendChild(clone);
+        makeDraggable(clone);
+        selectElement(clone);
+      });
 
       // Text Delete
       document.getElementById("btn-text-delete").addEventListener("click", () => {

@@ -17,12 +17,14 @@ class SapaperraDock extends HTMLElement {
                 --border: rgba(192, 192, 192, 0.15);
                 --accent: #8a8ad4;
                 --blur: blur(12px);
-                --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                --transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
                 --text-color: #c0c0c0;
                 --tooltip-bg: #1a1a1a;
+                --glitch-color-1: #0ff;
+                --glitch-color-2: #f0f;
                 display: block;
                 position: fixed;
-                top: 30px;
+                top: ${isPlayground ? '20px' : '30px'};
                 left: 50%;
                 transform: translateX(-50%);
                 z-index: 10000;
@@ -44,6 +46,26 @@ class SapaperraDock extends HTMLElement {
                 overflow: hidden;
                 justify-content: center;
                 box-sizing: border-box;
+                /* Propiedades para modo miniatura */
+                max-width: 100vw; 
+                opacity: 1;
+            }
+
+            /* Modo Playground: Estado Minimizado por defecto */
+            :host([playground]) #dock {
+                padding: 5px;
+                gap: 0;
+                border-radius: 50px;
+                background: rgba(26, 26, 26, 0.6);
+                border-color: rgba(192, 192, 192, 0.1);
+            }
+
+            :host([playground]) #dock:hover {
+                padding: 10px;
+                gap: 12px;
+                background: var(--panel-bg);
+                border-color: var(--border);
+                border-radius: 30px;
             }
 
             .dock-item {
@@ -59,6 +81,57 @@ class SapaperraDock extends HTMLElement {
                 background: rgba(255, 255, 255, 0.03);
                 position: relative;
                 border: 1px solid transparent;
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            /* Ocultar items en modo miniatura (excepto el trigger) */
+            :host([playground]) #dock:not(:hover) .dock-item:not(#dock-trigger) {
+                width: 0;
+                min-width: 0;
+                padding: 0;
+                opacity: 0;
+                margin: 0;
+                border: 0;
+                overflow: hidden;
+                transform: scale(0);
+            }
+
+            /* El Trigger (Icono miniatura) */
+            #dock-trigger {
+                display: ${isPlayground ? 'flex' : 'none'};
+                width: 40px;
+                height: 10px;
+                min-width: 40px;
+                background: rgba(138, 138, 212, 0.3);
+                border-radius: 10px;
+                cursor: pointer;
+                transition: var(--transition);
+                border: 1px solid transparent;
+            }
+
+            :host([playground]) #dock:hover #dock-trigger {
+                display: none; /* Se oculta al expandir */
+            }
+
+            #dock-trigger:hover {
+                background: var(--accent);
+                box-shadow: 0 0 10px var(--accent);
+            }
+
+            /* Separator logic for collapsing */
+            .separator {
+                width: 1px;
+                height: 24px;
+                background: var(--border);
+                margin: 0 5px;
+                transition: var(--transition);
+            }
+            
+            :host([playground]) #dock:not(:hover) .separator {
+                width: 0;
+                margin: 0;
+                opacity: 0;
             }
 
             @keyframes pulse-hint {
@@ -133,20 +206,51 @@ class SapaperraDock extends HTMLElement {
                 opacity: 0.8;
             }
 
-            .separator {
-                width: 1px;
-                height: 24px;
-                background: var(--border);
-                margin: 0 5px;
-            }
-
             .module-link { 
                 display: ${isPlayground ? 'flex' : 'none'}; 
             }
+
+            /* --- GLITCH OVERLAY STYLES --- */
+            #glitch-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: #000;
+                z-index: 99999;
+                pointer-events: none;
+                opacity: 0;
+                display: none;
+            }
+
+            #glitch-overlay.active {
+                display: block;
+                animation: glitch-flash 0.4s steps(5) forwards;
+            }
+
+            @keyframes glitch-flash {
+                0% { opacity: 0; clip-path: inset(50% 0 50% 0); }
+                10% { opacity: 1; background: var(--panel-bg); clip-path: inset(10% 0 85% 0); }
+                20% { opacity: 0.8; background: var(--glitch-color-1); clip-path: inset(80% 0 5% 0); transform: translateX(-5px); }
+                30% { opacity: 1; background: #000; clip-path: inset(20% 0 20% 0); }
+                40% { opacity: 0.5; background: var(--glitch-color-2); clip-path: inset(0 0 0 0); transform: translateX(5px); }
+                50% { opacity: 1; background: #fff; filter: invert(1); clip-path: polygon(0 0, 100% 0, 100% 10%, 0 10%, 0 90%, 100% 90%, 100% 100%, 0 100%); }
+                60% { opacity: 0; }
+                70% { opacity: 1; background: var(--accent); clip-path: inset(40% 0 40% 0); }
+                100% { opacity: 0; clip-path: inset(50% 0 50% 0); display: none; }
+            }
         </style>
+
+        <!-- Glitch Layer -->
+        <div id="glitch-overlay"></div>
 
         <div id="dock">
             ${isPlayground ? `
+                <!-- Miniature Trigger (Visible when collapsed) -->
+                <div id="dock-trigger"></div>
+
+                <!-- Actual Dock Items (Hidden when collapsed) -->
                 <div class="dock-item" id="back-home">
                     <svg viewBox="0 0 24 24"><path d="M20,11H7.83l5.59-5.59L12,4l-8,8l8,8l1.41-1.41L7.83,13H20V11z"/></svg>
                     <div class="tooltip">
@@ -223,6 +327,8 @@ class SapaperraDock extends HTMLElement {
             }
 
             const items = this.shadowRoot.querySelectorAll('.module-link');
+            const glitchOverlay = this.shadowRoot.getElementById('glitch-overlay');
+
             items.forEach(item => {
                 item.addEventListener('click', () => {
                     const moduleName = item.dataset.module;
@@ -234,12 +340,29 @@ class SapaperraDock extends HTMLElement {
                     });
                     item.classList.add('active');
 
-                    window.dispatchEvent(new CustomEvent('module-change', { 
-                        detail: { 
-                            module: moduleName,
-                            url: moduleUrl
-                        } 
-                    }));
+                    // Trigger Glitch Animation
+                    if (glitchOverlay) {
+                        glitchOverlay.classList.remove('active');
+                        void glitchOverlay.offsetWidth; // Force reflow
+                        glitchOverlay.classList.add('active');
+
+                        // Wait slightly for visual impact before actual dispatch (optional, kept instant for response)
+                        setTimeout(() => {
+                            window.dispatchEvent(new CustomEvent('module-change', { 
+                                detail: { 
+                                    module: moduleName,
+                                    url: moduleUrl
+                                } 
+                            }));
+                        }, 200);
+                    } else {
+                         window.dispatchEvent(new CustomEvent('module-change', { 
+                            detail: { 
+                                module: moduleName,
+                                url: moduleUrl
+                            } 
+                        }));
+                    }
                 });
             });
         }

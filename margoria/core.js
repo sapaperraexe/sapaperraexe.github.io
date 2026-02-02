@@ -147,6 +147,13 @@ function addToCanvas(src, type) {
         textBlock.textContent = "Type here...";
       }
       textBlock.style.pointerEvents = "auto";
+      // Hide text toolbar with a slight delay to allow toolbar button clicks
+      setTimeout(() => {
+        const textToolbar = document.getElementById("text-toolbar");
+        if (textToolbar && document.activeElement !== textToolbar) {
+          textToolbar.classList.remove("visible");
+        }
+      }, 100);
     });
     
     textBlock.addEventListener("mousedown", (e) => {
@@ -164,27 +171,17 @@ function addToCanvas(src, type) {
     selectElement(el);
   });
   
-  // Calcular posición relativa al canvas basada en la posición del mouse
-  let x, y;
-  
-  // Verificar si el mouse está dentro del canvas
-  if (lastMousePos.x > canvasRect.left && lastMousePos.x < canvasRect.right &&
-      lastMousePos.y > canvasRect.top && lastMousePos.y < canvasRect.bottom) {
-    // Mouse está dentro del canvas, calcular posición relativa
-    x = lastMousePos.x - canvasRect.left - 70;
-    y = lastMousePos.y - canvasRect.top - 70;
-  } else {
-    // Mouse está fuera, centrar el elemento en el canvas
-    x = (750 / 2) - 70;
-    y = (900 / 2) - 70;
-  }
-  
-  // Asegurar que está dentro de los márgenes (40px en cada lado)
+  // Centrar elemento nuevo en el canvas
   const MARGINS = 40;
+  const ELEMENT_SIZE = 140;
   const MAX_WIDTH = 750 - (MARGINS * 2);
   const MAX_HEIGHT = 900 - (MARGINS * 2);
-  x = Math.max(MARGINS, Math.min(x, MARGINS + MAX_WIDTH - 140));
-  y = Math.max(MARGINS, Math.min(y, MARGINS + MAX_HEIGHT - 140));
+  
+  let x = (750 / 2) - (ELEMENT_SIZE / 2);
+  let y = (900 / 2) - (ELEMENT_SIZE / 2);
+  
+  x = Math.max(MARGINS, Math.min(x, MARGINS + MAX_WIDTH - ELEMENT_SIZE));
+  y = Math.max(MARGINS, Math.min(y, MARGINS + MAX_HEIGHT - ELEMENT_SIZE));
   
   // NO usar left/top, solo transform
   el.style.left = "0px";
@@ -195,6 +192,24 @@ function addToCanvas(src, type) {
   
   canvas.appendChild(el);
   selectElement(el);
+
+  // If this is a text element, focus its contenteditable and place caret at end
+  if (type === 'text') {
+    const tb = el.querySelector('.text-block');
+    if (tb) {
+      // small timeout to ensure element is in document
+      setTimeout(() => {
+        tb.focus();
+        // place caret at end
+        const range = document.createRange();
+        const sel = window.getSelection();
+        range.selectNodeContents(tb);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }, 30);
+    }
+  }
 }
 
 function selectElement(el) {
@@ -209,11 +224,31 @@ function selectElement(el) {
   if (window.TRANSFORM_MANAGER) {
     const mgr = window.TRANSFORM_MANAGER;
     let tf = mgr.items.find(i => i.el === el);
-    if (!tf) tf = mgr.register(el);
-    // clear previous and select this transformer
-    mgr.clearSelection();
-    mgr.toggleSelection(tf);
+    if (!tf) {
+      tf = mgr.register(el);
+    }
+    if (tf) {
+      // clear previous and select this transformer
+      mgr.clearSelection();
+      mgr.toggleSelection(tf);
+    }
   }
+
+  // If selected element contains a text-block, focus it and place caret at end
+  try {
+    const tb = el.querySelector && el.querySelector('.text-block');
+    if (tb) {
+      setTimeout(() => {
+        tb.focus();
+        const range = document.createRange();
+        const sel = window.getSelection();
+        range.selectNodeContents(tb);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }, 10);
+    }
+  } catch (err) { /* ignore if not focusable */ }
 }
 
 // --- Flip helpers ---
@@ -353,31 +388,118 @@ function duplicateSelectedElement() {
 
     const clone = currentSelectedElement.cloneNode(true);
     
-    // FIX: Add the mousedown listener for selection that is lost during cloning
+    // Limpiar handles primero
+    clone.querySelectorAll('.transform-handle, .h-rot-line').forEach(h => h.remove());
+    
+    // Re-agregar el listener de mousedown que se pierde al clonar
     clone.addEventListener("mousedown", (ev) => {
         ev.stopPropagation();
         selectElement(clone);
     });
 
-    const x = parseFloat(currentSelectedElement.getAttribute("data-x")) || 0;
-    const y = parseFloat(currentSelectedElement.getAttribute("data-y")) || 0;
-    
-    let newX = x + 30;
-    let newY = y + 30;
+    const origX = parseFloat(currentSelectedElement.getAttribute("data-x")) || 0;
+    const origY = parseFloat(currentSelectedElement.getAttribute("data-y")) || 0;
+    const origW = parseFloat(currentSelectedElement.style.width) || 140;
+    const origH = parseFloat(currentSelectedElement.style.height) || 140;
     
     const MARGINS = 40;
     const MAX_WIDTH = 750 - (MARGINS * 2);
     const MAX_HEIGHT = 900 - (MARGINS * 2);
-    newX = Math.max(MARGINS, Math.min(newX, MARGINS + MAX_WIDTH - 140));
-    newY = Math.max(MARGINS, Math.min(newY, MARGINS + MAX_HEIGHT - 140));
+    const OFFSET_STEP = 20;
+    
+    // Buscar posición sin solapamiento
+    let newX = origX;
+    let newY = origY;
+    let foundPosition = false;
+    
+    // Intentar offset a la derecha y abajo en incrementos
+    for (let attempt = 1; attempt <= 10; attempt++) {
+        const testX = origX + (OFFSET_STEP * attempt);
+        const testY = origY + (OFFSET_STEP * attempt);
+        
+        // Verificar que está dentro de los márgenes
+        if (testX + origW <= MARGINS + MAX_WIDTH && testY + origH <= MARGINS + MAX_HEIGHT) {
+            // Verificar que no se solapa con otros elementos
+            let overlaps = false;
+            document.querySelectorAll(".draggable-element").forEach(el => {
+                if (el === currentSelectedElement) return;
+                const elX = parseFloat(el.getAttribute("data-x")) || 0;
+                const elY = parseFloat(el.getAttribute("data-y")) || 0;
+                const elW = parseFloat(el.style.width) || 140;
+                const elH = parseFloat(el.style.height) || 140;
+                
+                // Comprobar colisión
+                if (testX < elX + elW && testX + origW > elX &&
+                    testY < elY + elH && testY + origH > elY) {
+                    overlaps = true;
+                }
+            });
+            
+            if (!overlaps) {
+                newX = testX;
+                newY = testY;
+                foundPosition = true;
+                break;
+            }
+        }
+    }
+    
+    // Si no encuentra posición sin solapar, usar offset simple con restricciones
+    if (!foundPosition) {
+        newX = Math.max(MARGINS, Math.min(origX + 30, MARGINS + MAX_WIDTH - origW));
+        newY = Math.max(MARGINS, Math.min(origY + 30, MARGINS + MAX_HEIGHT - origH));
+    }
     
     clone.setAttribute("data-x", newX);
     clone.setAttribute("data-y", newY);
     clone.style.transform = `translate(${newX}px, ${newY}px)`;
     
+    // Preservar flip state si existe
+    if (currentSelectedElement.dataset.flipX) clone.dataset.flipX = currentSelectedElement.dataset.flipX;
+    if (currentSelectedElement.dataset.flipY) clone.dataset.flipY = currentSelectedElement.dataset.flipY;
+    
+    clone.style.zIndex = String(++nextZIndex);
+    
     const canvas = document.getElementById("paper-viewport");
     canvas.appendChild(clone);
+    // Preserve rotation: try to read angle from existing transformer
+    let preservedAngle = 0;
+    try {
+      if (window.TRANSFORM_MANAGER) {
+        const mgr = window.TRANSFORM_MANAGER;
+        const oldTf = mgr.items.find(i => i.el === currentSelectedElement);
+        if (oldTf && typeof oldTf.state.angle === 'number') preservedAngle = oldTf.state.angle;
+      }
+    } catch (e) { /* ignore */ }
+
+    // Apply selection and then copy authoritative transform state from original
     selectElement(clone);
+    try {
+      if (window.TRANSFORM_MANAGER) {
+        const mgr = window.TRANSFORM_MANAGER;
+        const newTf = mgr.items.find(i => i.el === clone) || mgr.register(clone);
+        const oldTf = mgr.items.find(i => i.el === currentSelectedElement) || null;
+        if (newTf) {
+          // Prefer copying full state from the original transformer when available
+          if (oldTf && oldTf.state) {
+            newTf.state.angle = typeof oldTf.state.angle === 'number' ? oldTf.state.angle : preservedAngle;
+            newTf.state.w = typeof oldTf.state.w === 'number' ? oldTf.state.w : (parseFloat(clone.style.width) || newTf.state.w);
+            newTf.state.h = typeof oldTf.state.h === 'number' ? oldTf.state.h : (parseFloat(clone.style.height) || newTf.state.h);
+            newTf.state.pivotLocal = oldTf.state.pivotLocal ? { ...oldTf.state.pivotLocal } : newTf.state.pivotLocal;
+          } else {
+            // Fallback: set what we can
+            newTf.state.angle = preservedAngle;
+            newTf.state.w = parseFloat(clone.style.width) || newTf.state.w;
+            newTf.state.h = parseFloat(clone.style.height) || newTf.state.h;
+          }
+
+          // Ensure position matches computed placement
+          newTf.state.x = newX;
+          newTf.state.y = newY;
+          newTf.render();
+        }
+      }
+    } catch (e) { /* ignore */ }
 }
 
 // === GESTIÓN DE TEMAS ===
@@ -417,11 +539,63 @@ window.addEventListener("load", () => {
   
   console.log("✓ Margoria cargado");
 
+  // === RESPONSIVE SIDEBAR TOGGLES ===
+  // Mostrar botones toggle en móvil
+  const checkMobile = () => {
+    const isMobile = window.innerWidth <= 1100;
+    document.getElementById("btn-toggle-left-panel").style.display = isMobile ? "inline-flex" : "none";
+    document.getElementById("btn-toggle-right-panel").style.display = isMobile ? "inline-flex" : "none";
+  };
+  
+  checkMobile();
+  window.addEventListener("resize", checkMobile);
+  
+  // Toggle left sidebar
+  document.getElementById("btn-toggle-left-panel").addEventListener("click", () => {
+    const sidebar = document.querySelector("aside.sidebar:not(.sidebar-right)");
+    sidebar.classList.toggle("visible");
+    // Cerrar right panel si está abierto
+    document.querySelector("aside.sidebar-right").classList.remove("visible");
+  });
+  
+  // Toggle right sidebar
+  document.getElementById("btn-toggle-right-panel").addEventListener("click", () => {
+    const sidebar = document.querySelector("aside.sidebar-right");
+    sidebar.classList.toggle("visible");
+    // Cerrar left panel si está abierto
+    document.querySelector("aside.sidebar:not(.sidebar-right)").classList.remove("visible");
+  });
+  
+  // Cerrar sidebars al hacer clic en el canvas
+  document.getElementById("paper-viewport").addEventListener("mousedown", () => {
+    document.querySelector("aside.sidebar:not(.sidebar-right)").classList.remove("visible");
+    document.querySelector("aside.sidebar-right").classList.remove("visible");
+  });
+
+  // Delete - borrar elemento seleccionado. Backspace is reserved for text editing.
+  document.addEventListener("keydown", (e) => {
+    const active = document.activeElement;
+    const isEditing = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
+
+    if (e.key === "Delete") {
+      if (currentSelectedElement) {
+        e.preventDefault();
+        currentSelectedElement.remove();
+        hideContextToolbar();
+      }
+    } else if (e.key === "Backspace") {
+      // Allow normal backspace when editing text; otherwise prevent accidental deletion/navigation
+      if (isEditing) return; // let focused editable handle it
+      e.preventDefault();
+    }
+  });
+
   // Deseleccionar al hacer clic en fondo (solo clic izquierdo)
   document.getElementById("paper-viewport").addEventListener("mousedown", (e) => {
     // Solo deseleccionar si es clic izquierdo en el fondo (no en el toolbar)
     if (e.button === 0 && !e.target.closest(".text-toolbar")) {
       document.querySelectorAll(".draggable-element").forEach((el) => el.classList.remove("selected"));
+      hideContextToolbar();
     }
   });
 
@@ -487,38 +661,40 @@ window.addEventListener("load", () => {
   });
 
 
-  // === PANNING CON CLIC DERECHO ===
-  document.getElementById("paper-viewport").addEventListener("mousedown", (e) => {
-    if (e.button === 2) { // Clic derecho
-      e.preventDefault();
+  // === PANNING CON CLIC DERECHO / BOTÓN CENTRAL ===
+  const canvasArea = document.querySelector(".canvas-area");
+  
+  canvasArea.addEventListener("mousedown", (e) => {
+    // Pan con botón derecho (button 2) o botón central (button 1)
+    if (e.button === 2 || e.button === 1) {
       isPanning = true;
       panStartX = e.clientX;
       panStartY = e.clientY;
-      panStartScrollX = document.querySelector(".canvas-area").scrollLeft;
-      panStartScrollY = document.querySelector(".canvas-area").scrollTop;
-      document.getElementById("paper-viewport").classList.add("panning");
+      panStartScrollX = canvasArea.scrollLeft;
+      panStartScrollY = canvasArea.scrollTop;
+      canvasArea.style.cursor = "grabbing";
+      e.preventDefault();
     }
   });
 
   document.addEventListener("mousemove", (e) => {
-    if (isPanning) {
-      const dx = e.clientX - panStartX;
-      const dy = e.clientY - panStartY;
-      const canvasArea = document.querySelector(".canvas-area");
-      canvasArea.scrollLeft = panStartScrollX - dx;
-      canvasArea.scrollTop = panStartScrollY - dy;
+    if (isPanning && canvasArea) {
+      const deltaX = e.clientX - panStartX;
+      const deltaY = e.clientY - panStartY;
+      canvasArea.scrollLeft = panStartScrollX - deltaX;
+      canvasArea.scrollTop = panStartScrollY - deltaY;
     }
   });
 
   document.addEventListener("mouseup", (e) => {
     if (isPanning) {
       isPanning = false;
-      document.getElementById("paper-viewport").classList.remove("panning");
+      canvasArea.style.cursor = "auto";
     }
   });
 
   // Prevenir context menu durante panning
-  document.getElementById("paper-viewport").addEventListener("contextmenu", (e) => {
+  canvasArea.addEventListener("contextmenu", (e) => {
     e.preventDefault();
   });
 
@@ -651,29 +827,118 @@ function repeatBorder(el, direction) {
   const MARGINS = 40;
   const MAX_WIDTH = 750 - (MARGINS * 2);
   const MAX_HEIGHT = 900 - (MARGINS * 2);
+  // Small overlap in pixels will be computed per-piece (based on previous piece size)
+  let OVERLAP = Math.min(12, Math.round(Math.min(width, height) * 0.06));
 
+  // Place clones by continuing from the previous piece's actual transform
+  let prevEl = el;
   for (let i = 1; i < times; i++) {
-    const clone = el.cloneNode(true);
+    const clone = prevEl.cloneNode(true);
+
+    // Limpiar handles del clon (para que se regeneren)
+    clone.querySelectorAll('.transform-handle, .h-rot-line').forEach(h => h.remove());
+
     clone.style.zIndex = String(++nextZIndex);
-    
-    let newX = x;
-    let newY = y;
-    
-    if (direction === "horizontal") {
-      newX = x + (width * i);
-    } else if (direction === "vertical") {
-      newY = y + (height * i);
+
+    // Attempt to use TRANSFORM_MANAGER to get accurate previous transform
+    let prevTf = null;
+    if (window.TRANSFORM_MANAGER) {
+      prevTf = window.TRANSFORM_MANAGER.items.find(it => it.el === prevEl) || null;
     }
-    
-    // Asegurar que el clone está dentro del canvas
-    newX = Math.max(MARGINS, Math.min(newX, MARGINS + MAX_WIDTH - width));
-    newY = Math.max(MARGINS, Math.min(newY, MARGINS + MAX_HEIGHT - height));
-    
-    clone.setAttribute("data-x", newX);
-    clone.setAttribute("data-y", newY);
-    clone.style.transform = `translate(${newX}px, ${newY}px)`;
-    
+
+    // Determine previous piece size and angle
+    let prevW = width;
+    let prevH = height;
+    let prevAngle = 0;
+    let prevEnd = null; // in canvas-local coords
+
+    if (prevTf) {
+      prevW = prevTf.state.w || prevW;
+      prevH = prevTf.state.h || prevH;
+      prevAngle = prevTf.state.angle || 0;
+      // endpoint: right-middle for horizontal, bottom-middle for vertical
+      if (direction === 'horizontal') prevEnd = prevTf.getGlobalPoint(1, 0.5);
+      else prevEnd = prevTf.getGlobalPoint(0.5, 1);
+    } else {
+      // fallback: compute from DOM bounding rect (may be page coords)
+      const pImg = prevEl.querySelector('img');
+      if (pImg) {
+        const r = pImg.getBoundingClientRect();
+        // approximate local canvas coords using element data-x/data-y
+        const px = parseFloat(prevEl.getAttribute('data-x')) || 0;
+        const py = parseFloat(prevEl.getAttribute('data-y')) || 0;
+        if (direction === 'horizontal') prevEnd = { x: px + prevW, y: py + prevH/2 };
+        else prevEnd = { x: px + prevW/2, y: py + prevH };
+      } else {
+        prevEnd = { x: x + width, y: y + height/2 };
+      }
+    }
+    // Recompute overlap based on prior piece size so units match
+    OVERLAP = Math.min(12, Math.round(Math.min(prevW, prevH) * 0.06));
+
+    // Compute placement for the new clone so it continues seamlessly
+    const theta = (prevAngle || 0) * Math.PI / 180;
+    const cos = Math.cos(theta), sin = Math.sin(theta);
+    // unit vector along local +X in global coords
+    const ux = cos, uy = sin;
+
+    // shift endpoint back by overlap along the direction of the piece
+    const shiftX = ux * OVERLAP;
+    const shiftY = uy * OVERLAP;
+    const P = { x: prevEnd.x - shiftX, y: prevEnd.y - shiftY };
+
+    // For horizontal: align clone's left-middle (local 0,0.5) to P
+    // For vertical: align clone's top-middle (local 0.5,0) to P
+    let newX, newY;
+    if (direction === 'horizontal') {
+      // state.x = P.x + 0.5 * h * sin
+      newX = P.x + 0.5 * prevH * sin;
+      // state.y = P.y - 0.5 * h * cos
+      newY = P.y - 0.5 * prevH * cos;
+    } else {
+      // state.x = P.x - 0.5 * w * cos
+      newX = P.x - 0.5 * prevW * cos;
+      // state.y = P.y - 0.5 * w * sin
+      newY = P.y - 0.5 * prevW * sin;
+    }
+
+    // Ensure clone stays inside canvas bounds
+    newX = Math.max(MARGINS, Math.min(newX, MARGINS + MAX_WIDTH - prevW));
+    newY = Math.max(MARGINS, Math.min(newY, MARGINS + MAX_HEIGHT - prevH));
+
+    // Apply size and rotation to clone so it visually matches the chain
+    clone.style.width = prevW + 'px';
+    clone.style.height = prevH + 'px';
+    clone.setAttribute('data-x', newX);
+    clone.setAttribute('data-y', newY);
+    clone.style.transform = `translate(${newX}px, ${newY}px) rotate(${prevAngle}deg)`;
+
+    // Re-agregar listener de mousedown
+    clone.addEventListener('mousedown', (ev) => { ev.stopPropagation(); selectElement(clone); });
+
     canvas.appendChild(clone);
+
+    // Register the clone with the TransformManager so future pieces can reference it
+    if (window.TRANSFORM_MANAGER) {
+      try {
+        const mgr = window.TRANSFORM_MANAGER;
+        const newTf = mgr.register(clone);
+        if (newTf) {
+          // Copy authoritative state into the new transformer
+          newTf.state.angle = prevAngle;
+          newTf.state.w = prevW;
+          newTf.state.h = prevH;
+          newTf.state.x = newX;
+          newTf.state.y = newY;
+          // copy pivot from previous if available
+          if (prevTf && prevTf.state && prevTf.state.pivotLocal) newTf.state.pivotLocal = { ...prevTf.state.pivotLocal };
+          newTf.render();
+        }
+      } catch (e) { /* ignore registration errors */ }
+    }
+
+    // next iteration will continue from this clone
+    prevEl = clone;
   }
 }
 
@@ -703,287 +968,5 @@ const wheelZoomHandler = (e) => {
 document.getElementById("paper-viewport").addEventListener("wheel", wheelZoomHandler, { passive: false });
 document.querySelector(".canvas-area").addEventListener("wheel", wheelZoomHandler, { passive: false });
 
-// === TRANSFORM SYSTEM (from transformationcontrols2.html) ===
-class TechnicalTransformer {
-  constructor(el, manager) {
-    this.el = el; // .draggable-element
-    this.manager = manager;
-    this.pivotEl = document.getElementById('pivot-point');
-
-    // create handles if missing
-    if (!this.el.querySelector('.transform-handle')) {
-      const dirs = ['nw','n','ne','e','se','s','sw','w'];
-      dirs.forEach(d => {
-        const h = document.createElement('div');
-        h.className = `transform-handle h-${d}`;
-        h.setAttribute('data-dir', d);
-        this.el.appendChild(h);
-      });
-      // rotation handle and line
-      const rot = document.createElement('div');
-      rot.className = 'transform-handle h-rot';
-      rot.setAttribute('data-dir','rot');
-      this.el.appendChild(rot);
-      const rotLine = document.createElement('div');
-      rotLine.className = 'h-rot-line';
-      this.el.appendChild(rotLine);
-    }
-
-    // initial state from element attributes
-    const startX = parseFloat(this.el.getAttribute('data-x')) || (50 + Math.random()*200);
-    const startY = parseFloat(this.el.getAttribute('data-y')) || (50 + Math.random()*200);
-    const w = parseFloat(this.el.style.width) || (this.el.querySelector('img') ? this.el.querySelector('img').naturalWidth || 140 : 200);
-    const h = parseFloat(this.el.style.height) || (this.el.querySelector('img') ? this.el.querySelector('img').naturalHeight || 140 : 40);
-
-    this.state = { x: startX, y: startY, w: w, h: h, angle: 0, pivotLocal: { x: 0.5, y: 0.5 } };
-
-    this.init();
-  }
-
-  init() {
-    this.el.querySelectorAll('.transform-handle').forEach(h => {
-      h.addEventListener('mousedown', e => {
-        if (!this.manager.selection.has(this)) return;
-        if (e.altKey) {
-          this.setPivotFromHandle(h.dataset.dir);
-        } else {
-          this.manager.onStart(e, h.dataset.dir);
-        }
-      });
-    });
-
-    const content = this.el.querySelector('.text-block') || this.el.querySelector('img') || this.el.querySelector('.content') || this.el;
-    content.addEventListener('mousedown', e => {
-      if (e.target.getAttribute && e.target.getAttribute('contenteditable') === 'true' && document.activeElement === e.target) return;
-
-      if (e.ctrlKey || e.metaKey) {
-        this.manager.toggleSelection(this);
-      } else if (!this.manager.selection.has(this)) {
-        this.manager.clearSelection();
-        this.manager.toggleSelection(this);
-      }
-      this.manager.onStart(e, 'move');
-    });
-
-    this.render();
-  }
-
-  setPivotFromHandle(dir) {
-    const map = { nw:[0,0], n:[0.5,0], ne:[1,0], e:[1,0.5], se:[1,1], s:[0.5,1], sw:[0,1], w:[0,0.5], rot:[0.5,0.5] };
-    const [px,py] = map[dir] || [0.5,0.5];
-    this.state.pivotLocal = { x:px, y:py };
-    this.render();
-  }
-
-  getGlobalPoint(lx, ly) {
-    const rad = this.state.angle * Math.PI / 180;
-    const cos = Math.cos(rad), sin = Math.sin(rad);
-    return {
-      x: this.state.x + (lx * this.state.w * cos - ly * this.state.h * sin),
-      y: this.state.y + (lx * this.state.w * sin + ly * this.state.h * cos)
-    };
-  }
-
-  render() {
-    const { x,y,w,h,angle } = this.state;
-    this.el.style.width = `${w}px`;
-    this.el.style.height = `${h}px`;
-    this.el.style.transform = `translate(${x}px, ${y}px) rotate(${angle}deg)`;
-    this.updateCursors();
-  }
-
-  updateCursors() {
-    const a = ((this.state.angle % 360) + 360) % 360;
-    const hList = ['n','ne','e','se','s','sw','w','nw'];
-    const rCursors = ['ns-resize','nesw-resize','ew-resize','nwse-resize'];
-    hList.forEach((h,i)=>{
-      const el = this.el.querySelector(`[data-dir="${h}"]`);
-      if (el) {
-        const idx = Math.round((i*45 + a)/45) % 8;
-        el.style.cursor = rCursors[idx % 4];
-      }
-    });
-  }
-}
-
-class TransformManager {
-  constructor() {
-    this.items = [];
-    this.selection = new Set();
-    this.isDragging = false;
-    this.keys = { shift:false, ctrl:false };
-    this.pivotEl = document.getElementById('pivot-point');
-    this.init();
-  }
-
-  init() {
-    // register existing draggable elements
-    document.querySelectorAll('.draggable-element').forEach(el => {
-      const t = new TechnicalTransformer(el, this);
-      this.items.push(t);
-    });
-
-    window.addEventListener('mousemove', e => this.onMove(e));
-    window.addEventListener('mouseup', () => this.isDragging = false);
-    window.addEventListener('keydown', e => { this.keys.shift = e.shiftKey; this.keys.ctrl = e.ctrlKey || e.metaKey; });
-    window.addEventListener('keyup', e => { this.keys.shift = e.shiftKey; this.keys.ctrl = e.ctrlKey || e.metaKey; });
-
-    this.pivotEl.addEventListener('dblclick', () => {
-      this.selection.forEach(item => { item.state.pivotLocal = { x:0.5,y:0.5 }; item.render(); });
-      this.updatePivotUI();
-    });
-
-    // clear selection on background click
-    document.getElementById('paper-viewport').addEventListener('mousedown', e => {
-      if (e.target.id === 'paper-viewport') this.clearSelection();
-    });
-  }
-
-  // register a newly created element for transformation
-  register(el) {
-    const existing = this.items.find(i => i.el === el);
-    if (existing) return existing;
-    const t = new TechnicalTransformer(el, this);
-    this.items.push(t);
-    // Apply any flip state present on the element (so newly registered elements render flipped images)
-    try { updateFlipOnElement(el); } catch (e) { /* ignore if helper missing */ }
-    return t;
-  }
-
-  toggleSelection(item) {
-    if (this.selection.has(item)) { this.selection.delete(item); item.el.classList.remove('active'); }
-    else { this.selection.add(item); item.el.classList.add('active'); }
-    this.updatePivotUI();
-
-    // ensure context toolbar reflects the active selection when single
-    if (this.selection.size === 1) {
-      const single = this.selection.values().next().value;
-      // update global selected element and show context toolbar
-      try { currentSelectedElement = single.el; showContextToolbar(single.el); } catch (e) { /* ignore */ }
-    } else if (this.selection.size === 0) {
-      try { hideContextToolbar(); } catch (e) { /* ignore */ }
-    }
-  }
-
-  clearSelection() {
-    this.selection.forEach(item => item.el.classList.remove('active'));
-    this.selection.clear();
-    this.updatePivotUI();
-  }
-
-  updatePivotUI() {
-    if (this.selection.size === 0) { this.pivotEl.classList.remove('visible'); return; }
-    this.pivotEl.classList.add('visible');
-    let gPivot;
-    if (this.selection.size === 1) {
-      const it = this.selection.values().next().value;
-      gPivot = it.getGlobalPoint(it.state.pivotLocal.x, it.state.pivotLocal.y);
-    } else {
-      let tx=0, ty=0;
-      this.selection.forEach(it => { const p = it.getGlobalPoint(it.state.pivotLocal.x, it.state.pivotLocal.y); tx+=p.x; ty+=p.y; });
-      gPivot = { x: tx/this.selection.size, y: ty/this.selection.size };
-    }
-    // store last pivot in local canvas coordinates for interaction math
-    // store pivot in local canvas coords
-    this.lastPivotLocal = { x: gPivot.x, y: gPivot.y };
-    // compensate for canvas padding (paper-viewport uses padding which shifts child coordinates)
-    const canvas = document.getElementById('paper-viewport');
-    const cs = window.getComputedStyle(canvas);
-    const padLeft = parseFloat(cs.paddingLeft) || 0;
-    const padTop = parseFloat(cs.paddingTop) || 0;
-    this.pivotEl.style.left = (gPivot.x + padLeft) + 'px';
-    this.pivotEl.style.top = (gPivot.y + padTop) + 'px';
-  }
-
-  onStart(e, handleType) {
-    e.stopPropagation(); if (handleType !== 'move') e.preventDefault();
-    this.isDragging = true;
-    this.handle = handleType;
-    this.dragType = handleType === 'rot' ? 'rotate' : (handleType === 'move' ? 'move' : 'resize');
-
-    // Work in local canvas coordinates to account for CSS scale/zoom and page offsets
-    const canvas = document.getElementById('paper-viewport');
-    const canvasRect = canvas.getBoundingClientRect();
-    const scale = (typeof currentZoom === 'number' && currentZoom > 0) ? currentZoom : 1;
-
-    this.canvasRect = canvasRect;
-    this.scale = scale;
-
-    // anchor in local coordinates (pivot position inside canvas)
-    const anchorLocal = this.lastPivotLocal || { x: 0, y: 0 };
-    this.anchorLocal = anchorLocal;
-
-    // mouse start in local coordinates
-    this.mouseStartLocal = { x: (e.clientX - canvasRect.left) / scale, y: (e.clientY - canvasRect.top) / scale };
-
-    this.snapStates = new Map();
-    this.selection.forEach(it => { this.snapStates.set(it, { ...it.state }); });
-    if (this.dragType === 'rotate') {
-      this.initialMouseAngle = Math.atan2(this.mouseStartLocal.y - anchorLocal.y, this.mouseStartLocal.x - anchorLocal.x) * 180 / Math.PI;
-    }
-  }
-
-  onMove(e) {
-    if (!this.isDragging) return;
-
-    // current mouse in local coords
-    const canvasRect = this.canvasRect || document.getElementById('paper-viewport').getBoundingClientRect();
-    const scale = this.scale || ((typeof currentZoom === 'number' && currentZoom > 0) ? currentZoom : 1);
-    const mouseLocal = { x: (e.clientX - canvasRect.left) / scale, y: (e.clientY - canvasRect.top) / scale };
-
-    this.selection.forEach(it => {
-      const snap = this.snapStates.get(it);
-      if (this.dragType === 'move') {
-        it.state.x = snap.x + (mouseLocal.x - this.mouseStartLocal.x);
-        it.state.y = snap.y + (mouseLocal.y - this.mouseStartLocal.y);
-      } else if (this.dragType === 'rotate') {
-        const currentMouseAngle = Math.atan2(mouseLocal.y - this.anchorLocal.y, mouseLocal.x - this.anchorLocal.x) * 180 / Math.PI;
-        const deltaAngle = currentMouseAngle - this.initialMouseAngle;
-        it.state.angle = snap.angle + deltaAngle;
-        const rad = deltaAngle * Math.PI / 180; const cos = Math.cos(rad), sin = Math.sin(rad);
-        const rx = snap.x - this.anchorLocal.x; const ry = snap.y - this.anchorLocal.y;
-        it.state.x = this.anchorLocal.x + (rx * cos - ry * sin);
-        it.state.y = this.anchorLocal.y + (rx * sin + ry * cos);
-      } else if (this.dragType === 'resize') {
-        // convert mouse local to page coords expected by applyResize (we'll adapt by passing local coords scaled)
-        const pageX = canvasRect.left + mouseLocal.x * scale;
-        const pageY = canvasRect.top + mouseLocal.y * scale;
-        this.applyResize(it, snap, pageX, pageY);
-      }
-      it.render();
-    });
-    this.updatePivotUI();
-  }
-
-  applyResize(it, snap, mx, my) {
-    // mx,my may be page coordinates; convert to local canvas coordinates
-    const canvasRect = this.canvasRect || document.getElementById('paper-viewport').getBoundingClientRect();
-    const scale = this.scale || ((typeof currentZoom === 'number' && currentZoom > 0) ? currentZoom : 1);
-    const mxLocal = (mx - canvasRect.left) / scale;
-    const myLocal = (my - canvasRect.top) / scale;
-    const dx = mxLocal - this.mouseStartLocal.x; const dy = myLocal - this.mouseStartLocal.y;
-    const rad = -snap.angle * Math.PI / 180;
-    const lx = dx * Math.cos(rad) - dy * Math.sin(rad);
-    const ly = dx * Math.sin(rad) + dy * Math.cos(rad);
-    const h = this.handle;
-    const sx = h.includes('e') ? 1 : (h.includes('w') ? -1 : 0);
-    const sy = h.includes('s') ? 1 : (h.includes('n') ? -1 : 0);
-    const distXP = h.includes('e') ? (1 - it.state.pivotLocal.x) : (h.includes('w') ? it.state.pivotLocal.x : 0);
-    const distYP = h.includes('s') ? (1 - it.state.pivotLocal.y) : (h.includes('n') ? it.state.pivotLocal.y : 0);
-    let dw = distXP > 0 ? (lx * sx / distXP) : 0;
-    let dh = distYP > 0 ? (ly * sy / distYP) : 0;
-    if (!this.keys.shift && h.length === 2) {
-      const ratio = snap.w / snap.h;
-      if (Math.abs(dw) > Math.abs(dh * ratio)) dh = dw / ratio; else dw = dh * ratio;
-    }
-    const nw = Math.max(10, snap.w + dw); const nh = Math.max(10, snap.h + dh);
-    it.state.w = nw; it.state.h = nh;
-    const nRad = it.state.angle * Math.PI / 180;
-    const anchor = it.getGlobalPoint(it.state.pivotLocal.x, it.state.pivotLocal.y);
-    it.state.x = anchor.x - (it.state.pivotLocal.x * nw * Math.cos(nRad) - it.state.pivotLocal.y * nh * Math.sin(nRad));
-    it.state.y = anchor.y - (it.state.pivotLocal.x * nw * Math.sin(nRad) + it.state.pivotLocal.y * nh * Math.cos(nRad));
-  }
-}
-
-// create a global manager instance and expose it
-window.TRANSFORM_MANAGER = new TransformManager();
+// === TRANSFORM SYSTEM - Loaded from handles.js ===
+// See handles.js for TechnicalTransformer, TransformManager classes

@@ -20,8 +20,9 @@ class SapaperraDock extends HTMLElement {
                 --transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
                 --text-color: #c0c0c0;
                 --tooltip-bg: #1a1a1a;
-                --glitch-color-1: #0ff;
-                --glitch-color-2: #f0f;
+                --glitch-color-1: #00ffff;
+                --glitch-color-2: #ff00ff;
+                --glitch-color-3: #ffff00;
                 display: block;
                 position: fixed;
                 top: ${isPlayground ? '20px' : '30px'};
@@ -46,13 +47,14 @@ class SapaperraDock extends HTMLElement {
                 overflow: hidden;
                 justify-content: center;
                 box-sizing: border-box;
-                /* Propiedades para modo miniatura */
+                /* Por defecto expandido */
                 max-width: 100vw; 
                 opacity: 1;
             }
 
-            /* Modo Playground: Estado Minimizado por defecto */
-            :host([playground]) #dock {
+            /* --- ESTADO: APP CARGADA (MINIMIZADO) --- */
+            /* Solo aplicamos el estilo "miniatura" si tiene la clase .app-loaded */
+            :host([playground].app-loaded) #dock {
                 padding: 5px;
                 gap: 0;
                 border-radius: 50px;
@@ -60,7 +62,8 @@ class SapaperraDock extends HTMLElement {
                 border-color: rgba(192, 192, 192, 0.1);
             }
 
-            :host([playground]) #dock:hover {
+            /* Al hacer hover en estado cargado, se expande de nuevo */
+            :host([playground].app-loaded) #dock:hover {
                 padding: 10px;
                 gap: 12px;
                 background: var(--panel-bg);
@@ -85,8 +88,8 @@ class SapaperraDock extends HTMLElement {
                 transform: scale(1);
             }
 
-            /* Ocultar items en modo miniatura (excepto el trigger) */
-            :host([playground]) #dock:not(:hover) .dock-item:not(#dock-trigger) {
+            /* Ocultar items SOLO si está en modo app-loaded y NO hay hover */
+            :host([playground].app-loaded) #dock:not(:hover) .dock-item:not(#dock-trigger) {
                 width: 0;
                 min-width: 0;
                 padding: 0;
@@ -97,9 +100,10 @@ class SapaperraDock extends HTMLElement {
                 transform: scale(0);
             }
 
-            /* El Trigger (Icono miniatura) */
+            /* --- TRIGGER (Pastilla) --- */
             #dock-trigger {
-                display: ${isPlayground ? 'flex' : 'none'};
+                /* Inicialmente oculto, solo aparece cuando la app está cargada */
+                display: none;
                 width: 40px;
                 height: 10px;
                 min-width: 40px;
@@ -110,8 +114,9 @@ class SapaperraDock extends HTMLElement {
                 border: 1px solid transparent;
             }
 
-            :host([playground]) #dock:hover #dock-trigger {
-                display: none; /* Se oculta al expandir */
+            /* Mostrar trigger solo cuando app-loaded está activo y NO hay hover */
+            :host([playground].app-loaded) #dock:not(:hover) #dock-trigger {
+                display: flex;
             }
 
             #dock-trigger:hover {
@@ -119,7 +124,7 @@ class SapaperraDock extends HTMLElement {
                 box-shadow: 0 0 10px var(--accent);
             }
 
-            /* Separator logic for collapsing */
+            /* Separator logic */
             .separator {
                 width: 1px;
                 height: 24px;
@@ -128,7 +133,7 @@ class SapaperraDock extends HTMLElement {
                 transition: var(--transition);
             }
             
-            :host([playground]) #dock:not(:hover) .separator {
+            :host([playground].app-loaded) #dock:not(:hover) .separator {
                 width: 0;
                 margin: 0;
                 opacity: 0;
@@ -166,7 +171,6 @@ class SapaperraDock extends HTMLElement {
 
             .dock-item.active svg { fill: var(--accent); }
 
-            /* Tooltip styling */
             .dock-item .tooltip {
                 position: absolute;
                 top: 70px;
@@ -210,7 +214,7 @@ class SapaperraDock extends HTMLElement {
                 display: ${isPlayground ? 'flex' : 'none'}; 
             }
 
-            /* --- GLITCH OVERLAY STYLES --- */
+            /* --- CHAOTIC GLITCH ANIMATION --- */
             #glitch-overlay {
                 position: fixed;
                 top: 0;
@@ -226,19 +230,37 @@ class SapaperraDock extends HTMLElement {
 
             #glitch-overlay.active {
                 display: block;
-                animation: glitch-flash 0.4s steps(5) forwards;
+                animation: glitch-chaos 0.35s steps(2, jump-none) forwards;
             }
 
-            @keyframes glitch-flash {
-                0% { opacity: 0; clip-path: inset(50% 0 50% 0); }
-                10% { opacity: 1; background: var(--panel-bg); clip-path: inset(10% 0 85% 0); }
-                20% { opacity: 0.8; background: var(--glitch-color-1); clip-path: inset(80% 0 5% 0); transform: translateX(-5px); }
-                30% { opacity: 1; background: #000; clip-path: inset(20% 0 20% 0); }
-                40% { opacity: 0.5; background: var(--glitch-color-2); clip-path: inset(0 0 0 0); transform: translateX(5px); }
-                50% { opacity: 1; background: #fff; filter: invert(1); clip-path: polygon(0 0, 100% 0, 100% 10%, 0 10%, 0 90%, 100% 90%, 100% 100%, 0 100%); }
-                60% { opacity: 0; }
-                70% { opacity: 1; background: var(--accent); clip-path: inset(40% 0 40% 0); }
-                100% { opacity: 0; clip-path: inset(50% 0 50% 0); display: none; }
+            @keyframes glitch-chaos {
+                0% { opacity: 1; background: #000; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); filter: invert(0); }
+                
+                5% { background: var(--glitch-color-1); clip-path: polygon(10% 0, 90% 0, 90% 10%, 10% 90%); transform: translate(-10px, 5px); }
+                
+                10% { background: var(--panel-bg); clip-path: inset(40% 0 40% 0); filter: invert(1); transform: translate(10px, -5px); }
+                
+                15% { background: var(--glitch-color-2); clip-path: polygon(0 50%, 100% 50%, 100% 60%, 0 60%); opacity: 0.8; }
+                
+                20% { background: #fff; clip-path: polygon(0 0, 20% 0, 20% 100%, 0 100%, 80% 0, 100% 0, 100% 100%, 80% 100%); transform: scale(1.05); }
+                
+                25% { background: #000; clip-path: inset(0 0 0 0); filter: hue-rotate(90deg); }
+                
+                35% { background: var(--glitch-color-3); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); transform: skew(20deg); }
+                
+                45% { background: var(--accent); clip-path: inset(10% 0 80% 0); opacity: 0.9; filter: contrast(2); }
+                
+                55% { background: #1a1a1a; clip-path: circle(20% at 50% 50%); transform: translate(0, 0); }
+                
+                65% { background: var(--glitch-color-1); clip-path: polygon(0 90%, 100% 90%, 100% 100%, 0 100%); filter: invert(1); }
+                
+                75% { background: #fff; clip-path: inset(0 0 0 0); opacity: 1; transform: scale(0.98); }
+                
+                85% { background: var(--glitch-color-2); clip-path: polygon(0 0, 50% 50%, 100% 0); transform: translate(5px, 5px); }
+                
+                95% { background: #000; clip-path: inset(45% 0 45% 0); }
+                
+                100% { opacity: 0; display: none; transform: none; clip-path: none; }
             }
         </style>
 
@@ -247,10 +269,10 @@ class SapaperraDock extends HTMLElement {
 
         <div id="dock">
             ${isPlayground ? `
-                <!-- Miniature Trigger (Visible when collapsed) -->
+                <!-- Miniature Trigger (Only visible when .app-loaded is active and no hover) -->
                 <div id="dock-trigger"></div>
 
-                <!-- Actual Dock Items (Hidden when collapsed) -->
+                <!-- Actual Dock Items -->
                 <div class="dock-item" id="back-home">
                     <svg viewBox="0 0 24 24"><path d="M20,11H7.83l5.59-5.59L12,4l-8,8l8,8l1.41-1.41L7.83,13H20V11z"/></svg>
                     <div class="tooltip">
@@ -334,6 +356,9 @@ class SapaperraDock extends HTMLElement {
                     const moduleName = item.dataset.module;
                     const moduleUrl = item.dataset.url;
                     
+                    // Marcar el host como 'app-loaded' para activar el minimizado automático
+                    this.classList.add('app-loaded');
+
                     items.forEach(i => {
                         i.classList.remove('active');
                         i.classList.remove('pulse-hint');
@@ -346,7 +371,6 @@ class SapaperraDock extends HTMLElement {
                         void glitchOverlay.offsetWidth; // Force reflow
                         glitchOverlay.classList.add('active');
 
-                        // Wait slightly for visual impact before actual dispatch (optional, kept instant for response)
                         setTimeout(() => {
                             window.dispatchEvent(new CustomEvent('module-change', { 
                                 detail: { 

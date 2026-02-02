@@ -211,8 +211,7 @@
 
     .header-left {
       display: flex;
-      align-items: center;
-      gap: 16px;
+      flex-direction: column;
     }
 
     .header-right {
@@ -741,49 +740,10 @@
       transition: filter 0.4s ease;
     }
 
-    .btn-sidebar-toggle {
-      display: none;
-    }
-
     /* === RESPONSIVE === */
     @media (max-width: 1100px) {
       main { grid-template-columns: 1fr; }
-      
-      .btn-sidebar-toggle {
-        display: inline-flex;
-      }
-
-      /* Hide non-essential buttons on mobile */
-      #btn-clear {
-        display: none;
-      }
-      
-      aside.sidebar { 
-        display: flex; /* Override display:none */
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        width: 320px;
-        max-width: 80%;
-        z-index: 200;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease-in-out;
-        border-right: 2px solid var(--accent-color);
-        box-shadow: 0 0 40px rgba(0,0,0,0.5);
-      }
-      aside.sidebar-right {
-        left: auto;
-        right: 0;
-        transform: translateX(100%);
-        border-right: none;
-        border-left: 2px solid var(--accent-color);
-      }
-
-      aside.sidebar.open {
-        transform: translateX(0);
-      }
-
+      aside.sidebar { display: none; }
       .canvas-area { padding: 20px; }
       #paper-viewport { transform: scale(0.7); }
     }
@@ -889,13 +849,8 @@
 <body class="theme-green"> <!-- Clase inicial -->
   <header>
     <div class="header-left">
-      <button class="btn-tool btn-sidebar-toggle" id="btn-toggle-left-sidebar" title="Toggle Left Panel">
-        <i data-lucide="panel-left"></i>
-      </button>
-      <div>
-        <h1>Margoria Notarium</h1>
-        <p>Manuscript and Marginalia Playground</p>
-      </div>
+      <h1>Margoria Notarium</h1>
+      <p>Manuscript and Marginalia Playground</p>
     </div>
     <div class="header-right">
       <button class="btn-tool" id="btn-toggle-theme" title="Switch Theme (Earth / Green)">
@@ -910,9 +865,6 @@
       </button>
       <button class="btn-tool primary" title="Save Codex (WIP)">
         <i data-lucide="save"></i> Save
-      </button>
-      <button class="btn-tool btn-sidebar-toggle" id="btn-toggle-right-sidebar" title="Toggle Right Panel">
-        <i data-lucide="panel-right"></i>
       </button>
     </div>
   </header>
@@ -1326,8 +1278,21 @@
         toolbar.style.top = Math.max(0, top) + "px";
         toolbar.style.left = Math.max(0, left) + "px";
         
+        <!-- // Posicionar sliders cerca de la toolbar -->
+        <!-- const scaleSlider = document.getElementById("scale-slider-container"); -->
+        <!-- const rotateSlider = document.getElementById("rotate-slider-container"); -->
         
-        // Slider positioning is now handled by button click events.
+        <!-- scaleSlider.style.position = "fixed"; -->
+        <!-- scaleSlider.style.top = (rect.top + rect.height + 10) + "px"; -->
+        <!-- scaleSlider.style.left = Math.max(10, rect.left) + "px"; -->
+        <!-- scaleSlider.style.bottom = "auto"; -->
+        <!-- scaleSlider.style.right = "auto"; -->
+        
+        <!-- rotateSlider.style.position = "fixed"; -->
+        <!-- rotateSlider.style.top = (rect.top + rect.height + 70) + "px"; -->
+        <!-- rotateSlider.style.left = Math.max(10, rect.left) + "px"; -->
+        <!-- rotateSlider.style.bottom = "auto"; -->
+        <!-- rotateSlider.style.right = "auto"; -->
       }
       
       // Guardar referencia al elemento actual
@@ -1362,8 +1327,6 @@
       const textToolbar = document.getElementById("text-toolbar");
       toolbar.classList.remove("visible");
       textToolbar.classList.remove("visible");
-      document.getElementById("scale-slider-container").style.display = "none";
-      document.getElementById("rotate-slider-container").style.display = "none";
       currentSelectedElement = null;
     }
 
@@ -1446,27 +1409,25 @@
             let x = (parseFloat(target.getAttribute("data-x")) || 0) + event.dx;
             let y = (parseFloat(target.getAttribute("data-y")) || 0) + event.dy;
             
-            // --- FIX: Preserve scale and rotation ---
-            const scale = parseFloat(target.getAttribute("data-scale")) || 1;
-            const rotate = parseFloat(target.getAttribute("data-rotate")) || 0;
-            // -----------------------------------------
-
-            // Boundary checking
-            const innerWidth = 750 - MARGINS.left - MARGINS.right;
-            const innerHeight = 900 - MARGINS.top - MARGINS.bottom;
-            const rect = target.getBoundingClientRect();
-            const elWidth = Math.ceil(rect.width / currentZoom); // Adjust for zoom
-            const elHeight = Math.ceil(rect.height / currentZoom); // Adjust for zoom
+            // Boundary checking - mantener dentro del canvas con márgenes
+            // Obtener el tamaño real del elemento (sin incluir márgenes de transformación)
+            const innerWidth = 750 - MARGINS.left - MARGINS.right; // 670
+            const innerHeight = 900 - MARGINS.top - MARGINS.bottom; // 820
             
+            // Ancho y alto del elemento
+            const rect = target.getBoundingClientRect();
+            const elWidth = Math.ceil(rect.width);
+            const elHeight = Math.ceil(rect.height);
+            
+            // Limitar a márgenes del canvas (40px en cada lado)
             x = Math.max(MARGINS.left, Math.min(x, MARGINS.left + innerWidth - elWidth));
             y = Math.max(MARGINS.top, Math.min(y, MARGINS.top + innerHeight - elHeight));
             
-            // --- FIX: Apply all transforms ---
-            target.style.transform = `translate(${x}px, ${y}px) rotate(${rotate}deg) scale(${scale})`;
+            target.style.transform = `translate(${x}px, ${y}px)`;
             target.setAttribute("data-x", x);
             target.setAttribute("data-y", y);
             
-            // Update position of text toolbar if it's a text block
+            // Actualizar posición de text toolbar si está visible y es un text block
             if (isText && document.getElementById("text-toolbar").classList.contains("visible")) {
               const textToolbar = document.getElementById("text-toolbar");
               const newRect = target.getBoundingClientRect();
@@ -1581,68 +1542,12 @@
       document.getElementById("tool-cycle-text-color").addEventListener("click", cycleTextColor);
 
      
-      // === CONTEXT TOOLBAR & SLIDERS NEW HANDLERS ===
-      
-      const setupToolbarHandlers = () => {
-        const contextToolbar = document.getElementById("context-toolbar");
-        const scaleContainer = document.getElementById("scale-slider-container");
-        const rotateContainer = document.getElementById("rotate-slider-container");
-
-        // Listener for the whole toolbar
-        contextToolbar.addEventListener("click", (e) => {
-            const isScaleBtn = e.target.closest("#btn-scale");
-            const isRotateBtn = e.target.closest("#btn-rotate");
-
-            if (isScaleBtn) {
-                e.stopPropagation();
-                // Toggle scale slider
-                if (scaleContainer.style.display === "block") {
-                    scaleContainer.style.display = "none";
-                } else {
-                    const toolbarRect = contextToolbar.getBoundingClientRect();
-                    scaleContainer.style.display = "block";
-                    rotateContainer.style.display = "none"; // Hide other slider
-                    
-                    scaleContainer.style.position = "fixed";
-                    scaleContainer.style.top = `${toolbarRect.bottom + 5}px`;
-                    scaleContainer.style.left = `${toolbarRect.left}px`;
-                }
-                return;
-            }
-
-            if (isRotateBtn) {
-                e.stopPropagation();
-                // Toggle rotate slider
-                if (rotateContainer.style.display === "block") {
-                    rotateContainer.style.display = "none";
-                } else {
-                    const toolbarRect = contextToolbar.getBoundingClientRect();
-                    rotateContainer.style.display = "block";
-                    scaleContainer.style.display = "none"; // Hide other slider
-
-                    rotateContainer.style.position = "fixed";
-                    rotateContainer.style.top = `${toolbarRect.bottom + 5}px`;
-                    rotateContainer.style.left = `${toolbarRect.left}px`;
-                }
-                return;
-            }
-            
-            // If any other button on the toolbar is clicked, hide sliders
-            scaleContainer.style.display = "none";
-            rotateContainer.style.display = "none";
-        });
-
-        // Global click handler for deselection
-        document.addEventListener("mousedown", (e) => {
-            if (currentSelectedElement && !e.target.closest(".draggable-element") && !e.target.closest(".context-toolbar") && !e.target.closest(".text-toolbar") && !e.target.closest("#scale-slider-container") && !e.target.closest("#rotate-slider-container")) {
-                hideContextToolbar();
-                document.querySelectorAll(".draggable-element").forEach(el => el.classList.remove("selected"));
-                currentSelectedElement = null;
-            }
-        });
-      }
-      
-      setupToolbarHandlers();
+      // === CONTEXT TOOLBAR HANDLERS ===
+      // Scale button
+      document.getElementById("btn-scale").addEventListener("click", () => {
+        const container = document.getElementById("scale-slider-container");
+        container.style.display = container.style.display === "none" ? "block" : "none";
+      });
 
       // Scale slider
       document.getElementById("scale-slider").addEventListener("input", (e) => {
@@ -1654,6 +1559,12 @@
         currentSelectedElement.setAttribute("data-scale", scale);
         currentSelectedElement.style.transform = `translate(${x}px, ${y}px) rotate(${rotate}deg) scale(${scale})`;
         document.getElementById("scale-value").textContent = Math.round(scale * 100) + "%";
+      });
+
+      // Rotate button
+      document.getElementById("btn-rotate").addEventListener("click", () => {
+        const container = document.getElementById("rotate-slider-container");
+        container.style.display = container.style.display === "none" ? "block" : "none";
       });
 
       // Rotate slider
@@ -1712,57 +1623,57 @@
         repeatBorder(currentSelectedElement, "vertical");
       });
 
-
-      // === CANVAS PANNING (MOUSE & TOUCH) ===
-      const canvasArea = document.querySelector('.canvas-area');
-      const paperViewport = document.getElementById('paper-viewport');
-      
-      const startPan = (e) => {
-        // Only pan when clicking on the background, not on elements
-        if (e.target.closest('.draggable-element')) {
-            return;
+      // Hide toolbar solo cuando se deselecciona (NO si está visible el text toolbar)
+      document.getElementById("paper-viewport").addEventListener("mousedown", (e) => {
+        // Ignorar clics en elementos interactivos
+        if (e.target.closest(".draggable-element") || e.target.closest(".text-toolbar") || e.target.closest(".context-toolbar")) {
+          return;
         }
-        e.preventDefault();
-        isPanning = true;
-        const touch = e.touches ? e.touches[0] : e;
-        panStartX = touch.clientX;
-        panStartY = touch.clientY;
-        panStartScrollX = canvasArea.scrollLeft;
-        panStartScrollY = canvasArea.scrollTop;
-        paperViewport.classList.add('panning');
-      };
+        
+        // Si hay texto seleccionado, mantener toolbar visible
+        if (currentSelectedElement && currentSelectedElement.querySelector(".text-block")) {
+          return;
+        }
+        
+        // Solo ocultar si se hace clic en el fondo
+        if (e.target === document.getElementById("paper-viewport") || e.target.closest(".grid-overlay")) {
+          hideContextToolbar();
+        }
+      });
 
-      const movePan = (e) => {
-          if (!isPanning) return;
-          const touch = e.touches ? e.touches[0] : e;
-          const dx = touch.clientX - panStartX;
-          const dy = touch.clientY - panStartY;
+
+      // === PANNING CON CLIC DERECHO ===
+      document.getElementById("paper-viewport").addEventListener("mousedown", (e) => {
+        if (e.button === 2) { // Clic derecho
+          e.preventDefault();
+          isPanning = true;
+          panStartX = e.clientX;
+          panStartY = e.clientY;
+          panStartScrollX = document.querySelector(".canvas-area").scrollLeft;
+          panStartScrollY = document.querySelector(".canvas-area").scrollTop;
+          document.getElementById("paper-viewport").classList.add("panning");
+        }
+      });
+
+      document.addEventListener("mousemove", (e) => {
+        if (isPanning) {
+          const dx = e.clientX - panStartX;
+          const dy = e.clientY - panStartY;
+          const canvasArea = document.querySelector(".canvas-area");
           canvasArea.scrollLeft = panStartScrollX - dx;
           canvasArea.scrollTop = panStartScrollY - dy;
-      };
+        }
+      });
 
-      const endPan = () => {
-          if (!isPanning) return;
+      document.addEventListener("mouseup", (e) => {
+        if (isPanning) {
           isPanning = false;
-          paperViewport.classList.remove('panning');
-      };
+          document.getElementById("paper-viewport").classList.remove("panning");
+        }
+      });
 
-      // Mouse Panning (Left Click on background)
-      paperViewport.addEventListener('mousedown', startPan);
-      
-      // We add move/up listeners to the window to capture events even if the
-      // cursor leaves the viewport during the drag.
-      window.addEventListener('mousemove', movePan);
-      window.addEventListener('mouseup', endPan);
-
-      // Touch Panning
-      paperViewport.addEventListener('touchstart', startPan, { passive: false });
-      window.addEventListener('touchmove', movePan, { passive: false });
-      window.addEventListener('touchend', endPan);
-      window.addEventListener('touchcancel', endPan);
-
-      // Prevent context menu on the canvas
-      paperViewport.addEventListener("contextmenu", (e) => {
+      // Prevenir context menu durante panning
+      document.getElementById("paper-viewport").addEventListener("contextmenu", (e) => {
         e.preventDefault();
       });
 
@@ -1873,28 +1784,6 @@
           textBlock.classList.remove("text-red", "text-gold");
           textBlock.style.fontSize = "26px";
         });
-      });
-
-      // === MOBILE SIDEBAR TOGGLES ===
-      const leftSidebar = document.querySelector("aside.sidebar");
-      const rightSidebar = document.querySelector("aside.sidebar-right");
-      
-      document.getElementById("btn-toggle-left-sidebar").addEventListener("click", (e) => {
-        e.stopPropagation();
-        leftSidebar.classList.toggle("open");
-        rightSidebar.classList.remove("open"); // Close other sidebar
-      });
-
-      document.getElementById("btn-toggle-right-sidebar").addEventListener("click", (e) => {
-        e.stopPropagation();
-        rightSidebar.classList.toggle("open");
-        leftSidebar.classList.remove("open"); // Close other sidebar
-      });
-
-      // Close sidebars if clicking on the main canvas area
-      document.querySelector(".canvas-area").addEventListener("mousedown", () => {
-         leftSidebar.classList.remove("open");
-         rightSidebar.classList.remove("open");
       });
     });
 

@@ -1,0 +1,54 @@
+@media (max-width:400px) {
+body{margin:0;padding:0;}
+#page {margin-top:0 !important;padding:14px 8px 18px 8px !important;background-position:98% -4px !important;border-radius:0px !important;}
+input[type="submit"]{width:95% !important;min-width:48px;max-width:300px;}
+#rtop {margin-top:15px !important;margin-bottom:17px !important;}
+#rbottom {margin-top:32px !important;margin-bottom:28px !important;}
+}
+body {background-color:#0aa2a4;}
+#page {
+margin:0 auto;
+max-width:740px;
+font-size:14px;
+font-family:Geneva, Arial, Helvetica, sans-serif;
+background-color:#FFFFFF;
+box-shadow:0 2px 4px rgba(0,0,0,0.5);
+padding:20px;
+margin-top:8px;
+background-image:url(../images/logo.jpg);
+background-repeat:no-repeat;
+background-position:98% 0px;
+border-radius:12px;
+}
+#content img {margin:6px;}
+a, a:active {color:#0000c6;} a:visited {color:#960099;} a:hover {color:#ee1818;}
+#logo {font-size:24px;font-family:Verdana, times, serif;}
+#wtf {font-size:12px;word-spacing:2px;}
+#menu {
+margin-top:15px;
+margin-bottom:15px;
+padding-top:3px;
+padding-bottom:3px;
+/*width:100%;*/
+clear:both;
+border-top:1px solid #87afff;
+border-bottom:1px solid #87afff;
+color:#999999;
+line-height:25px;
+text-align:center;
+}
+#menu a, #menu a:visited, #menu a:active {margin-left:4px;margin-right:4px;text-decoration:none;font-size:16px;font-weight:bold;color:#0000ce;}
+#menu a:hover {color:#ee1818;}
+h1, h2 {font-size:16px;}
+p{font-size:13px;}
+.ramka {border:solid 2px #bbbbbb;padding:4px 4px 5px;text-align:left;margin-bottom:12px;}
+.ramka img {margin:2px;}
+input, select {font-size:14px;}
+#pf {font-size:12px;margin-top:36px;margin-bottom:0px;padding-top:4px;padding-bottom:6px;padding-left:2px;border-top:1px solid #CCCCCC;border-bottom:1px solid #CCCCCC;}
+#co {font-size:10px;color:#999966;margin-top:10px;margin-bottom:-8px;}
+input[type="submit"]{margin:5px 5px 4px;}
+#rtop {max-width:740px;min-width:225px;margin-top:22px;margin-bottom:28px;}
+#rbottom {max-width:740px;min-width:225px;margin-top:32px;margin-bottom:32px;text-align:center;}
+#underrtop {margin-top:-6px;}
+.pages {font-size:18px;word-spacing:5px;}
+hr {border:none;background:#bbbbbb;height:1px;}

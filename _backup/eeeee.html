@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sapaperra Omni-Scriptorium | Unified Blueprint</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* =========================================================================
+           1. DESIGN TOKENS & DYNAMIC THEME
+           ========================================================================= */
+        :root {
+            --primary-h: 240; --primary-s: 50%; --primary-l: 60%;
+            --ui-primary: hsl(var(--primary-h), var(--primary-s), var(--primary-l));
+            --ui-accent: #978a4b;
+            --ui-bg: #0a0a0b;
+            --ui-surface: #141416;
+            --ui-text: #daddd8;
+            --ui-text-muted: #888890;
+            --ui-border: rgba(255, 255, 255, 0.08);
+            --ui-glass: blur(12px) saturate(160%);
+            --ui-radius: 12px;
+            --ui-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --ui-glow: 0 0 20px hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.3);
+            
+            /* Textures */
+            --pattern-grid: radial-gradient(var(--ui-border) 1px, transparent 1px);
+        }
+
+        [data-theme="light"] {
+            --ui-bg: #f0f0f4; --ui-surface: #ffffff; --ui-text: #1a1a1c;
+            --ui-border: rgba(0, 0, 0, 0.1);
+        }
+
+        /* =========================================================================
+           2. GLOBAL LAYOUT (3 COLUMNS)
+           ========================================================================= */
+        * { box-sizing: border-box; margin: 0; padding: 0; outline-color: var(--ui-primary); }
+        body {
+            background-color: var(--ui-bg); color: var(--ui-text);
+            font-family: 'Inter', system-ui, sans-serif;
+            height: 100vh; display: grid;
+            grid-template-columns: 320px 1fr 340px;
+            grid-template-rows: 60px 1fr; overflow: hidden;
+        }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulseGlow { 0% { box-shadow: 0 0 5px var(--ui-primary); } 50% { box-shadow: 0 0 20px var(--ui-primary); } 100% { box-shadow: 0 0 5px var(--ui-primary); } }
+
+        /* =========================================================================
+           3. UI COMPONENTS (Buttons, Inputs, Tabs)
+           ========================================================================= */
+        header {
+            grid-column: 1 / -1; background: var(--ui-surface);
+            border-bottom: 1px solid var(--ui-border);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 20px; z-index: 1000;
+        }
+
+        aside { 
+            background: var(--ui-surface); border-right: 1px solid var(--ui-border);
+            display: flex; flex-direction: column; overflow: hidden;
+            animation: fadeIn 0.5s ease-out;
+        }
+        aside.right { border-right: none; border-left: 1px solid var(--ui-border); }
+
+        .sidebar-scroll { flex: 1; overflow-y: auto; padding: 20px; }
+
+        .ui-btn {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--ui-border);
+            color: var(--ui-text); padding: 8px 14px; border-radius: 8px;
+            cursor: pointer; font-size: 11px; font-weight: 700;
+            text-transform: uppercase; transition: var(--ui-transition);
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .ui-btn:hover { background: var(--ui-primary); color: white; transform: translateY(-2px); }
+        .ui-btn.active { background: var(--ui-primary); box-shadow: var(--ui-glow); }
+
+        .control-group { margin-bottom: 20px; }
+        .ui-label { font-size: 10px; color: var(--ui-text-muted); font-weight: 800; text-transform: uppercase; margin-bottom: 8px; display: block; }
+        .ui-input { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--ui-border); padding: 8px; border-radius: 6px; color: white; font-family: monospace; }
+
+        /* =========================================================================
+           4. WORKSPACE & CANVAS SYSTEM
+           ========================================================================= */
+        main {
+            position: relative; overflow: hidden;
+            background-image: var(--pattern-grid); background-size: 30px 30px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        #viewport {
+            position: relative; background: #fff;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+            transition: var(--ui-transition);
+        }
+
+        canvas#grid-canvas {
+            position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5;
+        }
+
+        #transform-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10; pointer-events: none;
+        }
+
+        /* =========================================================================
+           5. TRANSFORMABLE ELEMENTS & PIVOT
+           ========================================================================= */
+        .transform-box {
+            position: absolute; pointer-events: all;
+            border: 1px solid transparent; transition: border-color 0.2s;
+        }
+        .transform-box.active { border: 1px solid var(--ui-primary); }
+        
+        .box-content { width: 100%; height: 100%; overflow: hidden; cursor: move; }
+
+        .handle {
+            position: absolute; width: 10px; height: 10px; background: #fff;
+            border: 1.5px solid var(--ui-primary); z-index: 20;
+            transform: translate(-50%, -50%); display: none;
+        }
+        .transform-box.active .handle { display: block; }
+        .h-rot { top: -30px; left: 50%; border-radius: 50%; background: var(--ui-primary); }
+
+        #pivot-point {
+            position: absolute; width: 14px; height: 14px; border: 2px solid #00ff00;
+            border-radius: 50%; transform: translate(-50%, -50%); z-index: 100;
+            display: none; pointer-events: all; cursor: crosshair;
+        }
+        #pivot-point.visible { display: block; animation: pulseGlow 2s infinite; }
+
+        /* =========================================================================
+           6. EXPORT MODAL
+           ========================================================================= */
+        #export-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px); z-index: 3000;
+            display: none; align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: var(--ui-surface); border: 1px solid var(--ui-border);
+            padding: 30px; border-radius: 20px; width: 400px;
+        }
+
+        /* =========================================================================
+           7. ICONS SYSTEM (Sprite)
+           ========================================================================= */
+        .icon-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .icon-item { aspect-ratio: 1; border: 1px solid var(--ui-border); border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .icon-item:hover { background: var(--ui-primary); }
+
+    </style>
+</head>
+<body>
+
+    <!-- SVG SPRITE -->
+    <svg style="display:none;">
+        <symbol id="icon-save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></symbol>
+        <symbol id="icon-export" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" y2="3" x2="12"/></symbol>
+    </svg>
+
+    <header>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <strong style="letter-spacing:2px; font-size:14px;">SAPAPERRA OMNI</strong>
+            <span style="font-size:10px; opacity:0.5;">V4.0 - STABLE SCRIPTORIUM</span>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button class="ui-btn" onclick="openExport()"><i data-lucide="download"></i> Exportar</button>
+            <button class="ui-btn ui-btn--primary">Publicar</button>
+        </div>
+    </header>
+
+    <!-- SIDEBAR LEFT: ASSETS & THEME -->
+    <aside>
+        <div class="sidebar-scroll">
+            <div class="control-group">
+                <span class="ui-label">Sistema de Color (HSL)</span>
+                <input type="range" id="hue-slider" class="ui-input" min="0" max="360" value="240">
+                <div id="color-preview" style="height:40px; border-radius:8px; margin-top:10px; background: var(--ui-primary);"></div>
+            </div>
+
+            <div class="control-group">
+                <span class="ui-label">Biblioteca de Iconos</span>
+                <div class="icon-grid">
+                    <div class="icon-item" onclick="addBox('text')"><i data-lucide="type"></i></div>
+                    <div class="icon-item" onclick="addBox('img')"><i data-lucide="image"></i></div>
+                    <div class="icon-item"><i data-lucide="layers"></i></div>
+                    <div class="icon-item"><i data-lucide="pen-tool"></i></div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN WORKSPACE -->
+    <main id="main-work">
+        <div id="viewport" style="width: 800px; height: 600px;">
+            <canvas id="grid-canvas"></canvas>
+            <div id="transform-layer">
+                <div id="pivot-point"></div>
+                <!-- Los transform-boxes se inyectan aquí -->
+            </div>
+        </div>
+    </nav>
+
+    <!-- SIDEBAR RIGHT: INSPECTOR & GRID -->
+    <aside class="right">
+        <div class="sidebar-scroll">
+            <span class="ui-label">Configuración del Canvas</span>
+            <div class="control-group" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div>
+                    <span class="ui-label">Ancho</span>
+                    <input type="number" id="canvas-w" class="ui-input" value="800">
+                </div>
+                <div>
+                    <span class="ui-label">Alto</span>
+                    <input type="number" id="canvas-h" class="ui-input" value="600">
+                </div>
+            </div>
+
+            <span class="ui-label">Sistema de Grid</span>
+            <div class="control-group">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <span class="ui-label">Mostrar Grid</span>
+                    <input type="checkbox" id="show-grid">
+                </div>
+                <input type="range" id="grid-size" min="10" max="100" value="50">
+            </div>
+
+            <span class="ui-label">Márgenes de Seguridad</span>
+            <div class="control-group" style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+                <input type="number" id="m-top" class="ui-input" value="40" placeholder="T">
+                <input type="number" id="m-bottom" class="ui-input" value="40" placeholder="B">
+                <input type="number" id="m-left" class="ui-input" value="40" placeholder="L">
+                <input type="number" id="m-right" class="ui-input" value="40" placeholder="R">
+            </div>
+
+            <div id="inspector-data" style="margin-top:20px; font-family:monospace; font-size:10px; opacity:0.6; line-height:1.6;">
+                SELECCIONE UN OBJETO
+            </div>
+        </div>
+    </aside>
+
+    <!-- EXPORT MODAL -->
+    <div id="export-modal">
+        <div class="modal-content">
+            <h3 class="ui-label" style="font-size:14px; color:white;">Configurar Exportación</h3>
+            <div class="control-group">
+                <span class="ui-label">Formato</span>
+                <select id="exp-format" class="ui-input">
+                    <option value="png">PNG (Transparente)</option>
+                    <option value="jpeg">JPG (Alta Calidad)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <span class="ui-label">Escala</span>
+                <select id="exp-scale" class="ui-input">
+                    <option value="1">1x (Original)</option>
+                    <option value="2">2x (Retina)</option>
+                </select>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button class="ui-btn ui-btn--primary" onclick="processExport()">Descargar</button>
+                <button class="ui-btn" onclick="closeExport()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* =========================================================================
+           JS CORE: UNIFIED ARCHITECTURE
+           ========================================================================= */
+
+        const State = {
+            canvas: { w: 800, h: 600, grid: 50, showGrid: false, margins: [40, 40, 40, 40] },
+            theme: { h: 240, s: 50, l: 60 },
+            selection: new Set(),
+            items: []
+        };
+
+        // --- THEME ENGINE ---
+        document.getElementById('hue-slider').addEventListener('input', (e) => {
+            State.theme.h = e.target.value;
+            document.documentElement.style.setProperty('--primary-h', State.theme.h);
+            updateCanvas();
+        });
+
+        // --- GRID & CANVAS ENGINE ---
+        const mainCanvas = document.getElementById('grid-canvas');
+        const ctx = mainCanvas.getContext('2d');
+
+        function updateCanvas() {
+            const { w, h, grid, showGrid, margins } = State.canvas;
+            const viewport = document.getElementById('viewport');
+            
+            viewport.style.width = w + 'px';
+            viewport.style.height = h + 'px';
+            mainCanvas.width = w;
+            mainCanvas.height = h;
+
+            ctx.clearRect(0, 0, w, h);
+
+            if (showGrid) {
+                ctx.beginPath();
+                ctx.strokeStyle = `hsla(${State.theme.h}, 50%, 50%, 0.2)`;
+                for (let x = 0; x <= w; x += parseInt(grid)) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+                for (let y = 0; y <= h; y += parseInt(grid)) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+                ctx.stroke();
+            }
+
+            // Draw Margins (Safe Area)
+            ctx.setLineDash([5, 5]);
+            ctx.strokeStyle = `hsla(${State.theme.h}, 80%, 50%, 0.5)`;
+            ctx.strokeRect(margins[2], margins[0], w - margins[2] - margins[3], h - margins[0] - margins[1]);
+            ctx.setLineDash([]);
+        }
+
+        // --- TRANSFORM ENGINE (PIVOT AND HANDLES) ---
+        class Transformer {
+            constructor(type) {
+                this.id = Date.now();
+                this.state = { x: 100, y: 100, w: 200, h: 150, angle: 0, pivot: { x: 0.5, y: 0.5 } };
+                this.el = this.createEl(type);
+                document.getElementById('transform-layer').appendChild(this.el);
+                this.initEvents();
+            }
+
+            createEl(type) {
+                const div = document.createElement('div');
+                div.className = 'transform-box';
+                div.innerHTML = `
+                    <div class="box-content">${type === 'text' ? '<div contenteditable>Nuevo Texto</div>' : '<div style="background:#333; height:100%"></div>'}</div>
+                    <div class="handle h-nw" data-dir="nw"></div><div class="handle h-ne" data-dir="ne"></div>
+                    <div class="handle h-sw" data-dir="sw"></div><div class="handle h-se" data-dir="se"></div>
+                    <div class="handle h-rot" data-dir="rot"></div>
+                `;
+                return div;
+            }
+
+            initEvents() {
+                this.el.addEventListener('mousedown', (e) => {
+                    if (e.ctrlKey) {
+                        manager.toggleSelection(this);
+                    } else {
+                        manager.clearSelection();
+                        manager.toggleSelection(this);
+                    }
+                    manager.startDrag(e, 'move');
+                });
+
+                this.el.querySelectorAll('.handle').forEach(h => {
+                    h.addEventListener('mousedown', e => {
+                        e.stopPropagation();
+                        if (e.altKey) {
+                            this.setPivot(h.dataset.dir);
+                        } else {
+                            manager.startDrag(e, h.dataset.dir);
+                        }
+                    });
+                });
+            }
+
+            setPivot(dir) {
+                const map = { nw: [0, 0], ne: [1, 0], sw: [0, 1], se: [1, 1], rot: [0.5, 0.5] };
+                this.state.pivot.x = map[dir][0];
+                this.state.pivot.y = map[dir][1];
+                manager.updatePivotUI();
+            }
+
+            render() {
+                const s = this.state;
+                this.el.style.width = s.w + 'px';
+                this.el.style.height = s.h + 'px';
+                this.el.style.transform = `translate(${s.x}px, ${s.y}px) rotate(${s.angle}deg)`;
+            }
+
+            getGlobalPivot() {
+                const rad = this.state.angle * Math.PI / 180;
+                const cos = Math.cos(rad), sin = Math.sin(rad);
+                const lx = this.state.pivot.x * this.state.w;
+                const ly = this.state.pivot.y * this.state.h;
+                return {
+                    x: this.state.x + (lx * cos - ly * sin),
+                    y: this.state.y + (lx * sin + ly * cos)
+                };
+            }
+        }
+
+        const manager = {
+            activeHandle: null,
+            isDragging: false,
+            pivotEl: document.getElementById('pivot-point'),
+
+            startDrag(e, handle) {
+                this.isDragging = true;
+                this.activeHandle = handle;
+                this.mouseStart = { x: e.clientX, y: e.clientY };
+                
+                // Store initial states for snapping
+                this.initialStates = new Map();
+                State.selection.forEach(item => {
+                    this.initialStates.set(item, { ...item.state });
+                    if(handle === 'rot') {
+                        const p = item.getGlobalPivot();
+                        item.startAngle = Math.atan2(e.clientY - p.y, e.clientX - p.x) * 180 / Math.PI;
+                    }
+                });
+            },
+
+            onMove(e) {
+                if (!this.isDragging) return;
+                const dx = e.clientX - this.mouseStart.x;
+                const dy = e.clientY - this.mouseStart.y;
+
+                State.selection.forEach(item => {
+                    const init = this.initialStates.get(item);
+                    if (this.activeHandle === 'move') {
+                        item.state.x = init.x + dx;
+                        item.state.y = init.y + dy;
+                    } else if (this.activeHandle === 'rot') {
+                        const p = item.getGlobalPivot();
+                        const currentAngle = Math.atan2(e.clientY - p.y, e.clientX - p.x) * 180 / Math.PI;
+                        item.state.angle = init.angle + (currentAngle - item.startAngle);
+                    } else if (this.activeHandle.length === 2) {
+                        // Resize logic simplified for blueprint
+                        const rad = -init.angle * Math.PI / 180;
+                        const lx = dx * Math.cos(rad) - dy * Math.sin(rad);
+                        if (this.activeHandle.includes('e')) item.state.w = Math.max(20, init.w + lx);
+                        if (this.activeHandle.includes('s')) item.state.h = Math.max(20, init.h + dy);
+                    }
+                    item.render();
+                });
+                this.updatePivotUI();
+            },
+
+            toggleSelection(item) {
+                State.selection.add(item);
+                item.el.classList.add('active');
+                this.updatePivotUI();
+            },
+
+            clearSelection() {
+                State.selection.forEach(i => i.el.classList.remove('active'));
+                State.selection.clear();
+                this.updatePivotUI();
+            },
+
+            updatePivotUI() {
+                if (State.selection.size === 1) {
+                    const item = Array.from(State.selection)[0];
+                    const p = item.getGlobalPivot();
+                    this.pivotEl.style.left = p.x + 'px';
+                    this.pivotEl.style.top = p.y + 'px';
+                    this.pivotEl.classList.add('visible');
+                    document.getElementById('inspector-data').innerHTML = `ID: ${item.id}<br>X: ${Math.round(item.state.x)} Y: ${Math.round(item.state.y)}<br>ROT: ${Math.round(item.state.angle)}°`;
+                } else {
+                    this.pivotEl.classList.remove('visible');
+                }
+            }
+        };
+
+        // --- EXPORT SYSTEM ---
+        function openExport() { document.getElementById('export-modal').style.display = 'flex'; }
+        function closeExport() { document.getElementById('export-modal').style.display = 'none'; }
+        
+        function processExport() {
+            // Logica para aplanar DOM + Canvas en un nuevo canvas temporal
+            alert("Iniciando Renderizado de Alta Fidelidad...");
+            closeExport();
+        }
+
+        // --- INIT ---
+        window.addEventListener('mousemove', (e) => manager.onMove(e));
+        window.addEventListener('mouseup', () => manager.isDragging = false);
+
+        document.getElementById('show-grid').addEventListener('change', (e) => { State.canvas.showGrid = e.target.checked; updateCanvas(); });
+        document.getElementById('grid-size').addEventListener('input', (e) => { State.canvas.grid = e.target.value; updateCanvas(); });
+        
+        function addBox(type) {
+            const b = new Transformer(type);
+            State.items.push(b);
+            b.render();
+        }
+
+        // Inicializar UI
+        lucide.createIcons();
+        updateCanvas();
+
+        // Canvas resize listeners
+        document.getElementById('canvas-w').addEventListener('input', e => { State.canvas.w = e.target.value; updateCanvas(); });
+        document.getElementById('canvas-h').addEventListener('input', e => { State.canvas.h = e.target.value; updateCanvas(); });
+
+    </script>
+</body>
+</html>

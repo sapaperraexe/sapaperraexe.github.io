@@ -300,7 +300,7 @@ class SapaperraDock extends HTMLElement {
             </div>
 
             <!-- Margoria Notarium Module -->
-            <div class="dock-item module-link" data-module="margoria" data-url="https://sapaperraexe.github.io/margoria/Margoria-notarium.html">
+            <div class="dock-item module-link" data-module="margoria" data-url="margoria/Margoria-notarium.html">
                 <svg viewBox="0 0 239 215">
                     <defs><clipPath id="margoria-clip"><rect x="1275" y="1736" width="239" height="215"/></clipPath></defs>
                     <g clip-path="url(#margoria-clip)" transform="translate(-1275 -1736)">
@@ -311,7 +311,15 @@ class SapaperraDock extends HTMLElement {
                     <span class="tooltip-desc">Registro y notación de sistemas.</span>
                 </div>
             </div>
-            
+            <div class="dock-item module-link" data-module="Continuum Forge" data-url="continuum-forge.html">
+               <svg viewBox="0 0 24 24"><path d="M18.5,10c-1,0-1.8,0.4-2.5,1.1L12,15.1l-4-4.1C7.3,10.4,6.5,10,5.5,10C3.6,10,2,11.6,2,13.5C2,15.4,3.6,17,5.5,17 c1,0,1.8-0.4,2.5-1.1l4-4.1l4,4.1c0.7,0.7,1.5,1.1,2.5,1.1c1.9,0,3.5-1.6,3.5-3.5C22,11.6,20.4,10,18.5,10z M5.5,15.5 C4.4,15.5,3.5,14.6,3.5,13.5c0-1.1,0.9-1.9,1.9-1.9c0.5,0,1,0.2,1.3,0.5l3.2,3.3C9.5,15.7,8.5,15.5,5.5,15.5z M18.5,15.5 c-0.6,0-1.1-0.2-1.4-0.6l-3.2-3.3c0.4-0.4,0.9-0.6,1.4-0.6c1.1,0,1.9,0.9,1.9,1.9C20.5,14.6,19.6,15.5,18.5,15.5z" /></svg>
+                <div class="tooltip">
+                    <span class="tooltip-title">Continuum Forge</span>
+                    <span class="tooltip-desc">
+                        
+                    </span>
+                </div>
+            </div>
             <div class="dock-item module-link" data-module="infinity" data-url="about:blank">
                 <svg viewBox="0 0 24 24"><path d="M18.18,8.13c-1.31,0-2.58,0.58-3.48,1.52L12,12.5l-2.7,2.85c-0.9,0.94-2.17,1.52-3.48,1.52c-2.61,0-4.72-2.11-4.72-4.72 c0-2.61,2.11-4.72,4.72-4.72c1.31,0,2.58,0.58,3.48,1.52l1,1.06L11.5,8.73l-1.01-1.07C9.3,6.48,7.7,5.78,6.03,5.78 c-3.3,0-5.97,2.67-5.97,5.97s2.67,5.97,5.97,5.97c1.67,0,3.27-0.7,4.46-1.88L12,14.34l1.51,1.6c1.19,1.18,2.79,1.88,4.46,1.88 c3.3,0,5.97-2.67,5.97-5.97s-2.67-5.97-5.97-5.97c-1.67,0-3.27,0.7-4.46,1.88l-0.21,0.22l1.19,1.13l0.21-0.22 C15.42,8.65,16.74,8.13,18.18,8.13z M18.18,15.5c-1.31,0-2.58-0.58-3.48-1.52L12,11.5l2.7-2.85c0.9-0.94,2.17-1.52,3.48-1.52 c2.61,0,4.72,2.11,4.72,4.72S20.79,15.5,18.18,15.5z" /></svg>
                 <div class="tooltip">

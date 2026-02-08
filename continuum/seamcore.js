@@ -170,7 +170,7 @@ function renderInspectorToCanvas(texture, state, ui){
     const p = cx.createPattern(texture,'repeat');
     if (p && p.setTransform){
         const s = state.zoom/100;
-        const m = new DOMMatrix().scale(s,s).translate(state.pan.x/(s), state.pan.y/(s));
+        const m = new DOMMatrix().scale(s,s).translate(state.pan.x / s, state.pan.y / s);
         p.setTransform(m);
     }
     cx.fillStyle = p;
@@ -190,4 +190,9 @@ function renderInspectorToCanvas(texture, state, ui){
         cx.stroke();
     }
     return c;
+}
+
+function getSeamColor(ui){
+    if (!ui || !ui.seamColor || !ui.seamColor.value) return 'none';
+    return ui.seamColor.value;
 }

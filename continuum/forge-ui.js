@@ -28,8 +28,9 @@ const ui = {
         presets: document.querySelectorAll('.chip[data-crop-preset]'),
         l: document.getElementById('cropLeft'), t: document.getElementById('cropTop'),
         r: document.getElementById('cropRight'), b: document.getElementById('cropBottom'),
-        lockAll: document.getElementById('lockAll'), lockLR: document.getElementById('lockLR'), lockTB: document.getElementById('lockTB'),
-        lockAllToggle: document.getElementById('lockAllToggle'), lockLRToggle: document.getElementById('lockLRToggle'), lockTBToggle: document.getElementById('lockTBToggle')
+        lockAll: document.getElementById('lockAll'),
+        lockLR: document.getElementById('lockLR'),
+        lockTB: document.getElementById('lockTB')
     },
     method: {
         menu: document.getElementById('menuMethod'),
@@ -58,6 +59,7 @@ const ui = {
     export: {
         modal: document.getElementById('export-modal'),
         overlay: document.getElementById('modalOverlay'),
+        preview: document.getElementById('exportPreviewCanvas'),
         doBtn: document.getElementById('btnDoExport'),
         cancelBtn: document.getElementById('btnCancelExport'),
         filename: document.getElementById('expFilename'),
@@ -66,11 +68,7 @@ const ui = {
         jpgOpts: document.getElementById('expJpegOptions'),
         quality: document.getElementById('expQuality'),
         qVal: document.getElementById('expQVal'),
-        useGridRatio: document.getElementById('useGridRatio'),
         aspectLockBtn: document.getElementById('aspectLock'),
-        expTexture: document.getElementById('expTexture'),
-        expTile: document.getElementById('expTile'),
-        expInspector: document.getElementById('expInspector'),
         btnOrigSize: document.getElementById('btnOrigSize')
     },
 
@@ -85,18 +83,30 @@ const ui = {
 };
 const loader = document.getElementById('loading-overlay');
 
+function isLockActive(el){
+    if (!el) return false;
+    return Object.prototype.hasOwnProperty.call(el, 'checked') ? el.checked : el.classList.contains('active');
+}
+function setLockActive(el, value){
+    if (!el) return;
+    if (Object.prototype.hasOwnProperty.call(el, 'checked')) el.checked = value;
+    el.classList.toggle('active', value);
+}
+function toggleLockActive(el){
+    if (!el) return false;
+    const next = !isLockActive(el);
+    setLockActive(el, next);
+    return next;
+}
+
 /* ------------------------ Lógica de Menús Desplegables ------------------------ */
 function setupDropdowns() {
-    const menus = ['menuCrop', 'menuMethod', 'menuInspector'];
+    const menus = ['menuCrop', 'menuMethod'];
     menus.forEach(menuId => {
         const wrapper = document.getElementById(menuId);
         if (wrapper) {
             const button = wrapper.querySelector('.btn-icon');
             button.addEventListener('click', (e) => {
-                // Special logic for inspector button
-                if (menuId === 'menuInspector') {
-                    setViewMode('inspector');
-                }
                 const isActive = wrapper.classList.contains('active');
                 document.querySelectorAll('.btn-wrapper').forEach(m => m.classList.remove('active'));
                 if (!isActive) {
@@ -106,11 +116,27 @@ function setupDropdowns() {
             });
         }
     });
+    if (ui.inspector.menu && ui.inspector.btn) {
+        ui.inspector.btn.addEventListener('click', handleInspectorClick);
+    }
     window.addEventListener('click', (e) => {
         if (!e.target.closest('.btn-wrapper')) {
             document.querySelectorAll('.btn-wrapper').forEach(m => m.classList.remove('active'));
         }
     });
+}
+
+function handleInspectorClick(e) {
+    const wrapper = ui.inspector.menu;
+    const isActive = wrapper.classList.contains('active');
+    document.querySelectorAll('.btn-wrapper').forEach(m => m.classList.remove('active'));
+    if (!isActive) {
+        wrapper.classList.add('active');
+    }
+    if (state.viewMode !== 'inspector') {
+        setViewMode('inspector');
+    }
+    e.stopPropagation();
 }
 
 /* ------------------------ CARGA ROBUSTA ------------------------ */
@@ -221,22 +247,27 @@ function setupUIEventListeners() {
         debouncedProcess();
     }));
     [ui.crop.l, ui.crop.t, ui.crop.r, ui.crop.b].forEach(el => el.addEventListener('input', debouncedProcess));
-    [ui.crop.lockAllToggle, ui.crop.lockLRToggle, ui.crop.lockTBToggle].forEach(t => {
-        t.addEventListener('click', () => {
-            const input = t.querySelector('input');
-            input.checked = !input.checked;
-            t.classList.toggle('active', input.checked);
-            if (t === ui.crop.lockAllToggle && input.checked) {
-                ui.crop.lockLRToggle.classList.remove('active');
-                ui.crop.lockTBToggle.classList.remove('active');
-                ui.crop.lockLR.checked = false;
-                ui.crop.lockTB.checked = false;
+    [ui.crop.lockAll, ui.crop.lockLR, ui.crop.lockTB].filter(Boolean).forEach(btn => {
+        btn.addEventListener('click', () => {
+            const isOn = toggleLockActive(btn);
+            if (btn === ui.crop.lockAll && isOn) {
+                setLockActive(ui.crop.lockLR, false);
+                setLockActive(ui.crop.lockTB, false);
+            } else if (isOn && (btn === ui.crop.lockLR || btn === ui.crop.lockTB)) {
+                setLockActive(ui.crop.lockAll, false);
             }
+            debouncedProcess();
         });
     });
 
     // Vistas
-    ui.btnTextureOnly.addEventListener('click', () => setViewMode('texture-only'));
+    ui.btnTextureOnly.addEventListener('click', () => {
+        if (state.viewMode === 'texture-only') {
+            setViewMode('inspector');
+        } else {
+            setViewMode('texture-only');
+        }
+    });
     ui.btnAB.addEventListener('click', () => {
         setViewMode('compare');
         state.compareAlpha = (state.compareAlpha === 1 ? 0 : 1);
@@ -268,6 +299,12 @@ function setupUIEventListeners() {
         } else if (layout === 'left') {
             ui.controls.setAttribute('data-layout', 'left');
             ui.seamtools.setAttribute('data-layout', 'right');
+        } else if (layout === 'top') {
+            ui.controls.setAttribute('data-layout', 'top');
+            ui.seamtools.setAttribute('data-layout', 'bottom');
+        } else if (layout === 'bottom') {
+            ui.controls.setAttribute('data-layout', 'bottom');
+            ui.seamtools.setAttribute('data-layout', 'top');
         } else {
             ui.controls.setAttribute('data-layout', layout);
             ui.seamtools.setAttribute('data-layout', layout);
@@ -301,6 +338,12 @@ function setupUIEventListeners() {
         renderPreview(state.processedCanvas);
     }, { passive: false });
 
+    window.addEventListener('resize', () => {
+        if (!state.processedCanvas || !state.processedCanvas.width) return;
+        renderPreview(state.processedCanvas);
+        refreshGuidesBox();
+    });
+
     // Exportación
     ui.btnExportTop.addEventListener('click', openExport);
     ui.export.overlay.addEventListener('click', closeExport);
@@ -309,9 +352,8 @@ function setupUIEventListeners() {
     ui.export.aspectLockBtn.addEventListener('click', toggleAspectLock);
     ui.export.w.addEventListener('input', () => handleDimensionInput('width'));
     ui.export.h.addEventListener('input', () => handleDimensionInput('height'));
-    ui.export.useGridRatio.addEventListener('change', () => handleDimensionInput('width'));
     ui.export.doBtn.addEventListener('click', processExport);
-    ui.export.format.addEventListener('input', () => {
+    ui.export.format.addEventListener('change', () => {
         const isJpeg = ui.export.format.value === 'image/jpeg';
         ui.export.jpgOpts.style.display = isJpeg ? 'block' : 'none';
     });
@@ -338,11 +380,10 @@ function setViewMode(mode) {
     ui.inspector.btn.classList.toggle('active', isInspector);
     ui.btnTextureOnly.classList.toggle('active', mode === 'texture-only');
     ui.btnAB.classList.toggle('active', mode === 'compare');
+    ui.viewport.classList.toggle('inspector-mode', isInspector);
 
-    if (!isInspector) {
-        guidesActive = false; // Hide guides when not in inspector mode
-    } else {
-        guidesActive = true; // Show guides when in inspector mode
+    if (!isInspector && ui.inspector.menu.classList.contains('active')) {
+        ui.inspector.menu.classList.remove('active');
     }
     
     ui.viewport.style.cursor = isInspector ? 'grab' : 'default';
@@ -374,16 +415,20 @@ function runPipeline(){
     const img = state.originalImage;
     let cL = parseInt(ui.crop.l.value)||0, cT = parseInt(ui.crop.t.value)||0, cR = parseInt(ui.crop.r.value)||0, cB = parseInt(ui.crop.b.value)||0;
 
-    if (ui.crop.lockAll.checked){
+    const lockAll = isLockActive(ui.crop.lockAll);
+    const lockLR = isLockActive(ui.crop.lockLR);
+    const lockTB = isLockActive(ui.crop.lockTB);
+
+    if (lockAll){
         const ref = (document.activeElement && ['cropLeft','cropTop','cropRight','cropBottom'].includes(document.activeElement.id)) ? parseInt(document.activeElement.value)||0 : cL;
         cL=cT=cR=cB=ref;
         ui.crop.l.value=ref; ui.crop.t.value=ref; ui.crop.r.value=ref; ui.crop.b.value=ref;
     } else {
-        if (ui.crop.lockLR.checked){
+        if (lockLR){
             const lr = (document.activeElement && ['cropLeft','cropRight'].includes(document.activeElement.id)) ? parseInt(document.activeElement.value)||0 : cL;
             cL=cR=lr; ui.crop.l.value=lr; ui.crop.r.value=lr;
         }
-        if (ui.crop.lockTB.checked){
+        if (lockTB){
             const tb = (document.activeElement && ['cropTop','cropBottom'].includes(document.activeElement.id)) ? parseInt(document.activeElement.value)||0 : cT;
             cT=cB=tb; ui.crop.t.value=tb; ui.crop.b.value=tb;
         }
@@ -443,15 +488,49 @@ function renderPreview(texture){
         const vpRect = ui.viewport.getBoundingClientRect();
         dCanvas.width = vpRect.width;
         dCanvas.height = vpRect.height;
+        dCanvas.style.width = '100%';
+        dCanvas.style.height = '100%';
 
         const p = dCtx.createPattern(texture, 'repeat');
         if (p && p.setTransform){
             const s = state.zoom/100;
-            const m = new DOMMatrix().scale(s, s).translate(state.pan.x/s, state.pan.y/s);
+            const m = new DOMMatrix().scale(s, s).translate(state.pan.x / s, state.pan.y / s);
             p.setTransform(m);
         }
         dCtx.fillStyle = p;
         dCtx.fillRect(0,0,dCanvas.width,dCanvas.height);
+
+        if (guidesActive) {
+            const s = state.zoom / 100;
+            const stepX = texture.width * s;
+            const stepY = texture.height * s;
+            const offX = ((state.pan.x % stepX) + stepX) % stepX;
+            const offY = ((state.pan.y % stepY) + stepY) % stepY;
+
+            dCtx.save();
+            dCtx.strokeStyle = activeColor;
+            dCtx.lineWidth = 1;
+            dCtx.beginPath();
+            for (let x = offX; x < dCanvas.width; x += stepX) {
+                dCtx.moveTo(x, 0);
+                dCtx.lineTo(x, dCanvas.height);
+            }
+            for (let y = offY; y < dCanvas.height; y += stepY) {
+                dCtx.moveTo(0, y);
+                dCtx.lineTo(dCanvas.width, y);
+            }
+            dCtx.stroke();
+            dCtx.restore();
+        }
+    }
+
+    if (state.viewMode !== 'inspector') {
+        dCanvas.style.width = '';
+        dCanvas.style.height = '';
+    }
+
+    if (state.viewMode === 'inspector' && guidesActive) {
+        refreshGuidesBox();
     }
 }
 
@@ -471,26 +550,7 @@ function updateGuideButton() {
 }
 
 function refreshGuidesBox(){
-    if (!guidesActive){ ui.guides.overlay.style.display='none'; return; }
-    ui.guides.overlay.style.display='block';
-    
-    const viewC = ui.viewport;
-    ui.guides.overlay.style.width  = viewC.clientWidth + 'px';
-    ui.guides.overlay.style.height = viewC.clientHeight + 'px';
-    ui.guides.pattern.style.color = activeColor;
-    
-    const ratio = getGridRatioNumeric(activeRatio, state.originalImage);
-    const z = state.zoom / 100;
-    let gridW = state.processedCanvas.width * z;
-    let gridH = state.processedCanvas.height * z;
-    
-    if (ratio !== 'auto') gridH = gridW / ratio;
-    
-    ui.guides.pattern.style.backgroundSize = `${gridW}px ${gridH}px`;
-    const pan = state.pan;
-    const offX = ((pan.x % gridW)+gridW)%gridW;
-    const offY = ((pan.y % gridH)+gridH)%gridH;
-    ui.guides.pattern.style.backgroundPosition = `${offX}px ${offY}px`;
+    ui.guides.overlay.style.display = 'none';
 }
 function getGridRatioNumeric(val, img){
     if (!val || val==='auto'){
@@ -506,19 +566,24 @@ function getGridRatioNumeric(val, img){
     return r>0 ? r : 'auto';
 }
 function toggleGuides(){
-    guidesActive = !guidesActive;
     if (state.viewMode !== 'inspector') {
-        guidesActive = false;
+        setViewMode('inspector');
     }
+    guidesActive = !guidesActive;
     updateGuideButton();
     refreshGuidesBox();
+    if (state.processedCanvas && state.processedCanvas.width) {
+        renderPreview(state.processedCanvas);
+    }
 }
 function setRatio(val){ activeRatio = val; if(!guidesActive) toggleGuides(); else refreshGuidesBox(); }
 function setColor(color){
     activeColor = color;
     const picker = document.getElementById('colorPicker');
     if (picker) picker.value = colorToHex(color);
-    if(guidesActive) refreshGuidesBox();
+    if (guidesActive && state.processedCanvas && state.processedCanvas.width) {
+        renderPreview(state.processedCanvas);
+    }
 }
 function colorToHex(rgba){
     if (rgba.startsWith('#')) return rgba;
@@ -528,7 +593,7 @@ function colorToHex(rgba){
 }
 
 /* ------------------------ Exportación ------------------------ */
-let isAspectLocked = true, originalW=0, originalH=0;
+let isAspectLocked = true, originalW=0, originalH=0, originalFilename='texture';
 function openExport(){
     if(!state.processedCanvas || !state.processedCanvas.width){ return; }
     originalW = state.processedCanvas.width; originalH = state.processedCanvas.height;
@@ -536,8 +601,10 @@ function openExport(){
     ui.export.overlay.style.display='block'; ui.export.modal.style.display='block';
     ui.export.filename.value = originalFilename;
     ui.export.w.value = originalW; ui.export.h.value = originalH;
-    ui.export.useGridRatio.checked=false; isAspectLocked=true;
+    isAspectLocked=true;
     ui.export.aspectLockBtn.classList.add('locked');
+    ui.export.jpgOpts.style.display = ui.export.format.value === 'image/jpeg' ? 'block' : 'none';
+    updateExportPreview();
 }
 function closeExport(){ ui.export.overlay.style.display='none'; ui.export.modal.style.display='none'; }
 function setExpSize(size){
@@ -546,17 +613,21 @@ function setExpSize(size){
     ui.export.w.value = s;
     if (isAspectLocked){ handleDimensionInput('width'); }
     else { ui.export.h.value = s; }
+    updateExportPreview();
 }
 function toggleAspectLock(){
     isAspectLocked = !isAspectLocked;
     ui.export.aspectLockBtn.classList.toggle('locked', isAspectLocked);
     if (isAspectLocked){ handleDimensionInput('width'); }
+    updateExportPreview();
 }
 function handleDimensionInput(changed){
-    if (!isAspectLocked) return;
+    if (!isAspectLocked){
+        updateExportPreview();
+        return;
+    }
     const wInput=ui.export.w, hInput=ui.export.h;
-    const useGrid = ui.export.useGridRatio.checked;
-    const ratio = useGrid ? getGridRatioNumeric(activeRatio, state.originalImage) : (originalW/originalH);
+    const ratio = (originalW/originalH);
     if (ratio==='auto'){
         const texR = originalW/originalH;
         if (changed==='width'){ hInput.value = Math.round(wInput.value/texR); }
@@ -565,23 +636,28 @@ function handleDimensionInput(changed){
         if (changed==='width'){ hInput.value = Math.round(wInput.value/ratio); }
         else { wInput.value = Math.round(hInput.value*ratio); }
     }
+    updateExportPreview();
 }
 function processExport(){
-    const wantTexture = ui.export.expTexture.checked, wantTile = ui.export.expTile.checked, wantInspect = ui.export.expInspector.checked;
-    if (!wantTexture && !wantTile && !wantInspect){ alert('Selecciona al menos un destino de exportación.'); return; }
     const targetW = parseInt(ui.export.w.value)||originalW, targetH = parseInt(ui.export.h.value)||originalH;
     const format  = ui.export.format.value, quality = parseInt(ui.export.quality.value) || 92;
     const baseName= (ui.export.filename.value.trim() || originalFilename);
-    if (wantTexture){
-        triggerDownload(resizeCanvas(state.processedCanvas, targetW, targetH), format, `${baseName}_seamless`, quality);
-    }
-    if (wantTile){
-        triggerDownload(renderTileToCanvas(state.processedCanvas, ui), 'image/png', `${baseName}_tile`, 100);
-    }
-    if (wantInspect){
-        triggerDownload(renderInspectorToCanvas(state.processedCanvas, state, ui), 'image/png', `${baseName}_inspector`, 100);
-    }
+    triggerDownload(resizeCanvas(state.processedCanvas, targetW, targetH), format, `${baseName}_seamless`, quality);
     closeExport();
+}
+
+function updateExportPreview(){
+    if (!ui.export.preview || !state.processedCanvas || !state.processedCanvas.width) return;
+    const targetW = parseInt(ui.export.w.value)||originalW;
+    const targetH = parseInt(ui.export.h.value)||originalH;
+    const canvas = ui.export.preview;
+    canvas.width = targetW;
+    canvas.height = targetH;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(state.processedCanvas, 0,0, state.processedCanvas.width, state.processedCanvas.height, 0,0, targetW, targetH);
 }
 function triggerDownload(canvas, mime, name, quality){
     const link=document.createElement('a');
@@ -619,5 +695,11 @@ document.addEventListener('DOMContentLoaded', () => {
     setupUIEventListeners();
     setupScrollInputs();
     setViewMode('inspector'); // Modo inicial
+    guidesActive = false;
+    updateGuideButton();
+    refreshGuidesBox();
+    if (ui.inspector.menu) ui.inspector.menu.classList.remove('active');
     ui.method.blendAmt.disabled = true;
+    const picker = document.getElementById('colorPicker');
+    if (picker) picker.addEventListener('input', (e)=> setColor(e.target.value));
 });

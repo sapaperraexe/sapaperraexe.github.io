@@ -60,7 +60,7 @@ class TechnicalTransformer {
   init() {
     // Setup handle event listeners
     this.el.querySelectorAll('.transform-handle').forEach(h => {
-      h.addEventListener('mousedown', e => {
+      h.addEventListener('pointerdown', e => {
         if (!this.manager.selection.has(this)) return;
         if (e.altKey) {
           this.setPivotFromHandle(h.dataset.dir);
@@ -76,7 +76,7 @@ class TechnicalTransformer {
                    this.el.querySelector('.content') || 
                    this.el;
 
-    content.addEventListener('mousedown', e => {
+    content.addEventListener('pointerdown', e => {
       // Don't interfere with text editing
       if (e.target.getAttribute && 
           e.target.getAttribute('contenteditable') === 'true' && 
@@ -176,8 +176,9 @@ class TransformManager {
     });
 
     // Setup global event listeners
-    window.addEventListener('mousemove', e => this.onMove(e));
-    window.addEventListener('mouseup', () => this.isDragging = false);
+    window.addEventListener('pointermove', e => this.onMove(e));
+    window.addEventListener('pointerup', e => this.onEnd(e));
+    window.addEventListener('pointercancel', e => this.onEnd(e));
     
     window.addEventListener('keydown', e => {
       // Track modifier keys
@@ -216,7 +217,7 @@ class TransformManager {
     });
 
     // Clear selection on canvas background click
-    document.getElementById('paper-viewport').addEventListener('mousedown', e => {
+    document.getElementById('paper-viewport').addEventListener('pointerdown', e => {
       if (e.target.id === 'paper-viewport') this.clearSelection();
     });
   }
@@ -321,17 +322,29 @@ class TransformManager {
 
   /**
    * Start drag operation
-   * @param {MouseEvent} e - Mouse event
+   * @param {PointerEvent} e - Pointer event
    * @param {string} handleType - Handle type (move, rot, resize direction)
    */
   onStart(e, handleType) {
     e.stopPropagation(); 
-    if (handleType !== 'move') e.preventDefault();
+    if (handleType !== 'move' || e.pointerType === 'touch') e.preventDefault();
+
+    this.activePointerId = e.pointerId;
+    this.captureTarget = e.currentTarget || e.target;
+    if (this.captureTarget && this.captureTarget.setPointerCapture) {
+      try {
+        this.captureTarget.setPointerCapture(this.activePointerId);
+      } catch (err) {
+        // ignore if capture fails
+      }
+    }
     
     this.isDragging = true;
     this.handle = handleType;
     this.dragType = handleType === 'rot' ? 'rotate' : 
                     (handleType === 'move' ? 'move' : 'resize');
+
+    this.selection.forEach(it => it.el.classList.add('is-dragging'));
 
     const pivotGlobal = this.pivotGlobal || { x: 0, y: 0 };
     this.pivotAnchor = pivotGlobal;
@@ -354,10 +367,11 @@ class TransformManager {
 
   /**
    * Handle drag movement
-   * @param {MouseEvent} e - Mouse event
+   * @param {PointerEvent} e - Pointer event
    */
   onMove(e) {
     if (!this.isDragging) return;
+    if (this.activePointerId !== undefined && e.pointerId !== this.activePointerId) return;
 
     const dx = e.clientX - this.mousePageStart.x;
     const dy = e.clientY - this.mousePageStart.y;
@@ -406,6 +420,21 @@ class TransformManager {
     });
     
     this.updatePivotUI();
+  }
+
+  onEnd(e) {
+    if (this.activePointerId !== undefined && e.pointerId !== this.activePointerId) return;
+    this.isDragging = false;
+    this.selection.forEach(it => it.el.classList.remove('is-dragging'));
+    if (this.captureTarget && this.captureTarget.releasePointerCapture) {
+      try {
+        this.captureTarget.releasePointerCapture(this.activePointerId);
+      } catch (err) {
+        // ignore if release fails
+      }
+    }
+    this.activePointerId = undefined;
+    this.captureTarget = null;
   }
 
   /**

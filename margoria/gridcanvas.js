@@ -45,7 +45,7 @@
       border: 1px solid var(--accent-color); border-radius: var(--ui-radius);
       padding: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
       color: var(--text-main); font-family: system-ui, sans-serif; font-size: 12px;
-      display: none; max-height: 70vh; overflow-y: auto;
+      display: none; max-height: 70vh; max-width: 90vw; overflow-y: auto;
     `;
 
     gridPanel.innerHTML = `
@@ -239,7 +239,7 @@
       background: var(--panel-bg); border: 1px solid var(--accent-color);
       border-radius: var(--ui-radius); padding: 24px; width: 360px;
       box-shadow: 0 25px 50px rgba(0,0,0,0.6); color: var(--text-main);
-      font-family: system-ui, sans-serif;
+      font-family: system-ui, sans-serif; max-width: 90vw; max-height: 80vh; overflow: auto;
     `;
 
     modalBox.innerHTML = `
@@ -392,7 +392,9 @@
 
     // Get viewport dimensions
     const vpRect = vp.getBoundingClientRect();
-    const scale = w / vpRect.width;
+    const zoom = Number(window.currentZoom) || 1;
+    const baseWidth = vpRect.width / zoom;
+    const scale = w / baseWidth;
 
     const canvas = document.createElement('canvas');
     canvas.width = w;
@@ -406,10 +408,10 @@
         if (img.closest('.draggable-element')) return; // skip draggable images (drawn later)
         if (!img.complete) return;
         const r = img.getBoundingClientRect();
-        const x = (r.left - vpRect.left) * scale;
-        const y = (r.top - vpRect.top) * scale;
-        const iw = r.width * scale;
-        const ih = r.height * scale;
+        const x = ((r.left - vpRect.left) / zoom) * scale;
+        const y = ((r.top - vpRect.top) / zoom) * scale;
+        const iw = (r.width / zoom) * scale;
+        const ih = (r.height / zoom) * scale;
         try { ctx.drawImage(img, x, y, iw, ih); } catch (err) { /* ignore draw errors */ }
       });
     }
@@ -435,10 +437,10 @@
         const vpOffsetY = rect.top - vpRect.top;
 
         // Scale coordinates
-        const x = vpOffsetX * scale;
-        const y = vpOffsetY * scale;
-        const ew = rect.width * scale;
-        const eh = rect.height * scale;
+        const x = (vpOffsetX / zoom) * scale;
+        const y = (vpOffsetY / zoom) * scale;
+        const ew = (rect.width / zoom) * scale;
+        const eh = (rect.height / zoom) * scale;
 
         // Get element's transform (rotate)
         const transform = el.style.transform || '';

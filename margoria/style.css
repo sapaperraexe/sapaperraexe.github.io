@@ -410,6 +410,7 @@ body.theme-green .asset-item {
   padding: 50px;
   overflow: auto;
   scroll-behavior: auto;
+  touch-action: pan-x pan-y;
 }
 
 .ruler-h,
@@ -734,6 +735,16 @@ body.theme-green .demons-footer img {
 
 /* === RESPONSIVE === */
 @media (max-width: 1100px) {
+  header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .header-right {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
   main { 
     grid-template-columns: 1fr;
     overflow: visible;
@@ -785,17 +796,33 @@ body.theme-green .demons-footer img {
     max-width: 750px;
     aspect-ratio: 750 / 900;
     transform: none;
+    padding: 24px;
   }
 }
 
 @media (max-width: 700px) {
+  header {
+    padding: 10px 16px;
+  }
+
   #paper-viewport { 
     max-width: 90vw;
     aspect-ratio: 750 / 900;
+    padding: 16px;
   }
   
   .canvas-area {
     padding: 5px;
+  }
+
+  #zoom-control {
+    right: 10px;
+    bottom: 10px;
+  }
+
+  .dock {
+    padding: 8px 14px;
+    gap: 10px;
   }
 }
 
@@ -829,11 +856,15 @@ body.theme-green .demons-footer img {
   top: 0;
   box-sizing: border-box;
   user-select: none;
-  touch-action: none;
+  touch-action: auto;
   will-change: transform;
   transform-origin: 0 0;
   cursor: grab;
   z-index: 1;
+}
+
+.draggable-element.is-dragging {
+  touch-action: none;
 }
 
 .draggable-element:active {

@@ -111,13 +111,22 @@ function initPalettes() {
 
 let lastMousePos = { x: 0, y: 0 };
 
-document.addEventListener("mousemove", (e) => {
+document.addEventListener("pointermove", (e) => {
   lastMousePos = { x: e.pageX, y: e.pageY };
 });
 
+function getCanvasMetrics() {
+  const canvas = document.getElementById("paper-viewport");
+  if (!canvas) return { width: 0, height: 0, padX: 0, padY: 0 };
+  const styles = window.getComputedStyle(canvas);
+  const padX = parseFloat(styles.paddingLeft) || 0;
+  const padY = parseFloat(styles.paddingTop) || 0;
+  return { width: canvas.clientWidth, height: canvas.clientHeight, padX, padY };
+}
+
 function addToCanvas(src, type) {
   const canvas = document.getElementById("paper-viewport");
-  const canvasRect = canvas.getBoundingClientRect();
+  if (!canvas) return;
   
   const el = document.createElement("div");
   el.className = "draggable-element";
@@ -128,7 +137,6 @@ function addToCanvas(src, type) {
     el.innerHTML = `<div contenteditable="true" class="text-block pfeffermediaeval" spellcheck="false" style="outline: 2px dashed var(--accent-color); padding: 8px; white-space: pre-wrap; word-wrap: break-word; min-height: 20px;" data-placeholder="Type here...">Type here...</div>`;
     el.style.width = "200px";
     el.style.height = "auto";
-    el.style.touchAction = "none";
     el.style.userSelect = "none";
     
     // Agregar listeners para contenteditable que permitan drag sin editar
@@ -150,13 +158,14 @@ function addToCanvas(src, type) {
       // Hide text toolbar with a slight delay to allow toolbar button clicks
       setTimeout(() => {
         const textToolbar = document.getElementById("text-toolbar");
-        if (textToolbar && document.activeElement !== textToolbar) {
+        const active = document.activeElement;
+        if (textToolbar && !textToolbar.contains(active)) {
           textToolbar.classList.remove("visible");
         }
       }, 100);
     });
     
-    textBlock.addEventListener("mousedown", (e) => {
+    textBlock.addEventListener("pointerdown", (e) => {
       e.stopPropagation();
     });
   } else if (type === "border") {
@@ -166,22 +175,25 @@ function addToCanvas(src, type) {
     el.innerHTML = `<img src="${src}" style="width:100%; height:auto; display: block;" draggable="false" onerror="this.style.border='2px solid red'"/>`;
   }
 
-  el.addEventListener("mousedown", (ev) => {
+  el.addEventListener("pointerdown", (ev) => {
     ev.stopPropagation();
     selectElement(el);
   });
   
   // Centrar elemento nuevo en el canvas
-  const MARGINS = 40;
+  const { width, height, padX, padY } = getCanvasMetrics();
   const ELEMENT_SIZE = 140;
-  const MAX_WIDTH = 750 - (MARGINS * 2);
-  const MAX_HEIGHT = 900 - (MARGINS * 2);
-  
-  let x = (750 / 2) - (ELEMENT_SIZE / 2);
-  let y = (900 / 2) - (ELEMENT_SIZE / 2);
-  
-  x = Math.max(MARGINS, Math.min(x, MARGINS + MAX_WIDTH - ELEMENT_SIZE));
-  y = Math.max(MARGINS, Math.min(y, MARGINS + MAX_HEIGHT - ELEMENT_SIZE));
+  const elementWidth = parseFloat(el.style.width) || ELEMENT_SIZE;
+  const elementHeight = parseFloat(el.style.height) || ELEMENT_SIZE;
+
+  const maxWidth = Math.max(0, width - (padX * 2));
+  const maxHeight = Math.max(0, height - (padY * 2));
+
+  let x = (width / 2) - (elementWidth / 2);
+  let y = (height / 2) - (elementHeight / 2);
+
+  x = Math.max(padX, Math.min(x, padX + maxWidth - elementWidth));
+  y = Math.max(padY, Math.min(y, padY + maxHeight - elementHeight));
   
   // NO usar left/top, solo transform
   el.style.left = "0px";
@@ -362,6 +374,14 @@ function hideContextToolbar() {
   currentSelectedElement = null;
 }
 
+function clearSelectionState() {
+  document.querySelectorAll(".draggable-element").forEach((el) => el.classList.remove("selected"));
+  if (window.TRANSFORM_MANAGER) {
+    window.TRANSFORM_MANAGER.clearSelection();
+  }
+  hideContextToolbar();
+}
+
 let currentSelectedElement = null;
 
 function clearCanvas() {
@@ -392,7 +412,7 @@ function duplicateSelectedElement() {
     clone.querySelectorAll('.transform-handle, .h-rot-line').forEach(h => h.remove());
     
     // Re-agregar el listener de mousedown que se pierde al clonar
-    clone.addEventListener("mousedown", (ev) => {
+    clone.addEventListener("pointerdown", (ev) => {
         ev.stopPropagation();
         selectElement(clone);
     });
@@ -402,9 +422,11 @@ function duplicateSelectedElement() {
     const origW = parseFloat(currentSelectedElement.style.width) || 140;
     const origH = parseFloat(currentSelectedElement.style.height) || 140;
     
-    const MARGINS = 40;
-    const MAX_WIDTH = 750 - (MARGINS * 2);
-    const MAX_HEIGHT = 900 - (MARGINS * 2);
+    const metrics = getCanvasMetrics();
+    const MARGINS_X = metrics.padX;
+    const MARGINS_Y = metrics.padY;
+    const MAX_WIDTH = Math.max(0, metrics.width - (MARGINS_X * 2));
+    const MAX_HEIGHT = Math.max(0, metrics.height - (MARGINS_Y * 2));
     const OFFSET_STEP = 20;
     
     // Buscar posición sin solapamiento
@@ -418,7 +440,7 @@ function duplicateSelectedElement() {
         const testY = origY + (OFFSET_STEP * attempt);
         
         // Verificar que está dentro de los márgenes
-        if (testX + origW <= MARGINS + MAX_WIDTH && testY + origH <= MARGINS + MAX_HEIGHT) {
+        if (testX + origW <= MARGINS_X + MAX_WIDTH && testY + origH <= MARGINS_Y + MAX_HEIGHT) {
             // Verificar que no se solapa con otros elementos
             let overlaps = false;
             document.querySelectorAll(".draggable-element").forEach(el => {
@@ -446,8 +468,8 @@ function duplicateSelectedElement() {
     
     // Si no encuentra posición sin solapar, usar offset simple con restricciones
     if (!foundPosition) {
-        newX = Math.max(MARGINS, Math.min(origX + 30, MARGINS + MAX_WIDTH - origW));
-        newY = Math.max(MARGINS, Math.min(origY + 30, MARGINS + MAX_HEIGHT - origH));
+        newX = Math.max(MARGINS_X, Math.min(origX + 30, MARGINS_X + MAX_WIDTH - origW));
+        newY = Math.max(MARGINS_Y, Math.min(origY + 30, MARGINS_Y + MAX_HEIGHT - origH));
     }
     
     clone.setAttribute("data-x", newX);
@@ -567,7 +589,7 @@ window.addEventListener("load", () => {
   });
   
   // Cerrar sidebars al hacer clic en el canvas
-  document.getElementById("paper-viewport").addEventListener("mousedown", () => {
+  document.getElementById("paper-viewport").addEventListener("pointerdown", () => {
     document.querySelector("aside.sidebar:not(.sidebar-right)").classList.remove("visible");
     document.querySelector("aside.sidebar-right").classList.remove("visible");
   });
@@ -581,7 +603,7 @@ window.addEventListener("load", () => {
       if (currentSelectedElement) {
         e.preventDefault();
         currentSelectedElement.remove();
-        hideContextToolbar();
+        clearSelectionState();
       }
     } else if (e.key === "Backspace") {
       // Allow normal backspace when editing text; otherwise prevent accidental deletion/navigation
@@ -591,11 +613,10 @@ window.addEventListener("load", () => {
   });
 
   // Deseleccionar al hacer clic en fondo (solo clic izquierdo)
-  document.getElementById("paper-viewport").addEventListener("mousedown", (e) => {
+  document.getElementById("paper-viewport").addEventListener("pointerdown", (e) => {
     // Solo deseleccionar si es clic izquierdo en el fondo (no en el toolbar)
     if (e.button === 0 && !e.target.closest(".text-toolbar")) {
-      document.querySelectorAll(".draggable-element").forEach((el) => el.classList.remove("selected"));
-      hideContextToolbar();
+      clearSelectionState();
     }
   });
 
@@ -621,7 +642,7 @@ window.addEventListener("load", () => {
   document.getElementById("btn-delete").addEventListener("click", () => {
     if (!currentSelectedElement) return;
     currentSelectedElement.remove();
-    hideContextToolbar();
+    clearSelectionState();
   });
 
   // Border Repeat Horizontal
@@ -643,7 +664,7 @@ window.addEventListener("load", () => {
   if (flipVBtn) flipVBtn.addEventListener("click", flipSelectedVertical);
 
   // Hide toolbar solo cuando se deselecciona (NO si está visible el text toolbar)
-  document.getElementById("paper-viewport").addEventListener("mousedown", (e) => {
+  document.getElementById("paper-viewport").addEventListener("pointerdown", (e) => {
     // Ignorar clics en elementos interactivos
     if (e.target.closest(".draggable-element") || e.target.closest(".text-toolbar") || e.target.closest(".context-toolbar")) {
       return;
@@ -656,29 +677,35 @@ window.addEventListener("load", () => {
     
     // Solo ocultar si se hace clic en el fondo
     if (e.target === document.getElementById("paper-viewport") || e.target.closest(".grid-overlay")) {
-      hideContextToolbar();
+      clearSelectionState();
     }
   });
 
 
   // === PANNING CON CLIC DERECHO / BOTÓN CENTRAL ===
   const canvasArea = document.querySelector(".canvas-area");
+  let panPointerId = null;
   
-  canvasArea.addEventListener("mousedown", (e) => {
-    // Pan con botón derecho (button 2) o botón central (button 1)
-    if (e.button === 2 || e.button === 1) {
+  canvasArea.addEventListener("pointerdown", (e) => {
+    const isMousePan = e.pointerType === 'mouse' && (e.button === 2 || e.button === 1);
+    const isTouchPan = e.pointerType === 'touch' && e.target === document.getElementById("paper-viewport");
+    if (isMousePan || isTouchPan) {
       isPanning = true;
+      panPointerId = e.pointerId;
       panStartX = e.clientX;
       panStartY = e.clientY;
       panStartScrollX = canvasArea.scrollLeft;
       panStartScrollY = canvasArea.scrollTop;
       canvasArea.style.cursor = "grabbing";
       e.preventDefault();
+      if (canvasArea.setPointerCapture) {
+        try { canvasArea.setPointerCapture(panPointerId); } catch (err) { /* ignore */ }
+      }
     }
   });
 
-  document.addEventListener("mousemove", (e) => {
-    if (isPanning && canvasArea) {
+  document.addEventListener("pointermove", (e) => {
+    if (isPanning && canvasArea && (panPointerId === null || e.pointerId === panPointerId)) {
       const deltaX = e.clientX - panStartX;
       const deltaY = e.clientY - panStartY;
       canvasArea.scrollLeft = panStartScrollX - deltaX;
@@ -686,12 +713,19 @@ window.addEventListener("load", () => {
     }
   });
 
-  document.addEventListener("mouseup", (e) => {
-    if (isPanning) {
+  const stopPan = (e) => {
+    if (isPanning && (panPointerId === null || e.pointerId === panPointerId)) {
       isPanning = false;
+      panPointerId = null;
       canvasArea.style.cursor = "auto";
+      if (canvasArea.releasePointerCapture) {
+        try { canvasArea.releasePointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+      }
     }
-  });
+  };
+
+  document.addEventListener("pointerup", stopPan);
+  document.addEventListener("pointercancel", stopPan);
 
   // Prevenir context menu durante panning
   canvasArea.addEventListener("contextmenu", (e) => {
@@ -700,7 +734,16 @@ window.addEventListener("load", () => {
 
   // === TEXT TOOLBAR HANDLERS ===
   // Prevent deselection cuando se interactúa con la text toolbar
-  document.getElementById("text-toolbar").addEventListener("click", (e) => {
+  const textToolbar = document.getElementById("text-toolbar");
+  textToolbar.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+  textToolbar.addEventListener("pointerdown", (e) => {
+    e.stopPropagation();
+  });
+
+  const contextToolbar = document.getElementById("context-toolbar");
+  contextToolbar.addEventListener("pointerdown", (e) => {
     e.stopPropagation();
   });
 
@@ -791,7 +834,7 @@ window.addEventListener("load", () => {
   document.getElementById("btn-text-delete").addEventListener("click", () => {
     if (!currentSelectedElement) return;
     currentSelectedElement.remove();
-    hideContextToolbar();
+    clearSelectionState();
   });
 
   // Clear Text Formatting
@@ -824,9 +867,11 @@ function repeatBorder(el, direction) {
   
   // Número de repeticiones
   const times = 2;
-  const MARGINS = 40;
-  const MAX_WIDTH = 750 - (MARGINS * 2);
-  const MAX_HEIGHT = 900 - (MARGINS * 2);
+  const metrics = getCanvasMetrics();
+  const MARGINS_X = metrics.padX;
+  const MARGINS_Y = metrics.padY;
+  const MAX_WIDTH = Math.max(0, metrics.width - (MARGINS_X * 2));
+  const MAX_HEIGHT = Math.max(0, metrics.height - (MARGINS_Y * 2));
   // Small overlap in pixels will be computed per-piece (based on previous piece size)
   let OVERLAP = Math.min(12, Math.round(Math.min(width, height) * 0.06));
 
@@ -903,8 +948,8 @@ function repeatBorder(el, direction) {
     }
 
     // Ensure clone stays inside canvas bounds
-    newX = Math.max(MARGINS, Math.min(newX, MARGINS + MAX_WIDTH - prevW));
-    newY = Math.max(MARGINS, Math.min(newY, MARGINS + MAX_HEIGHT - prevH));
+    newX = Math.max(MARGINS_X, Math.min(newX, MARGINS_X + MAX_WIDTH - prevW));
+    newY = Math.max(MARGINS_Y, Math.min(newY, MARGINS_Y + MAX_HEIGHT - prevH));
 
     // Apply size and rotation to clone so it visually matches the chain
     clone.style.width = prevW + 'px';
@@ -914,7 +959,7 @@ function repeatBorder(el, direction) {
     clone.style.transform = `translate(${newX}px, ${newY}px) rotate(${prevAngle}deg)`;
 
     // Re-agregar listener de mousedown
-    clone.addEventListener('mousedown', (ev) => { ev.stopPropagation(); selectElement(clone); });
+    clone.addEventListener('pointerdown', (ev) => { ev.stopPropagation(); selectElement(clone); });
 
     canvas.appendChild(clone);
 
@@ -944,11 +989,13 @@ function repeatBorder(el, direction) {
 
 // === ZOOM CONTROL ===
 let currentZoom = 1;
+window.currentZoom = currentZoom;
 
 // Zoom slider
 document.getElementById("zoom-slider").addEventListener("input", (e) => {
   const zoomPercent = parseFloat(e.target.value);
   currentZoom = zoomPercent / 100;
+  window.currentZoom = currentZoom;
   const canvas = document.getElementById("paper-viewport");
   canvas.style.transform = `scale(${currentZoom})`;
   document.getElementById("zoom-value").textContent = zoomPercent + "%";
